@@ -10,10 +10,11 @@
 
 **SentimentAPI** es una solución diseñada para procesar feedback de clientes (reseñas, comentarios) y clasificarlos automáticamente mediante modelos de Inteligencia Artificial. Permite a las empresas detectar crisis de reputación y entender la voz del cliente en tiempo real.
 
-El sistema utiliza una arquitectura híbrida robusta:
+### 🚀 Propuesta de Valor
 
-- **Backend:** Java Spring Boot para la gestión de API y lógica de negocio.
-- **AI Core:** Python (Scikit-Learn) para el procesamiento de lenguaje natural (NLP).
+- **Clasificación Automática:** Detecta si un comentario es Positivo, Neutro o Negativo.
+- **Arquitectura Híbrida:** Potencia de Java en el Backend + Flexibilidad de Python en IA.
+- **Escalable:** Diseño listo para integrarse con bases de datos robustas (PostgreSQL).
 
 ---
 
@@ -24,7 +25,7 @@ El sistema utiliza una arquitectura híbrida robusta:
 - **Lenguaje:** Java 17
 - **Framework:** Spring Boot 3
 - **Gestor de Paquetes:** Maven
-- **Base de Datos:** H2 / Postgres (Por definir)
+- **Base de Datos:** H2 (Dev) / PostgreSQL (Prod)
 
 ### Data Science (Modelo IA)
 
@@ -51,6 +52,14 @@ El sistema utiliza una arquitectura híbrida robusta:
 
 ---
 
+## 📂 Estructura del Proyecto
+
+- `backend/` → Código fuente de Spring Boot.
+- `data-science/` → Notebooks y scripts de entrenamiento Python.
+- `frontend/` → (Opcional) Cliente web ligero.
+
+---
+
 ## 🚀 Cómo empezar (Setup)
 
 ### Pre-requisitos
@@ -59,12 +68,15 @@ El sistema utiliza una arquitectura híbrida robusta:
 2.  Tener instalado **Python 3.9+**.
 3.  Tener **Git** configurado.
 
-### Instalación
+### 1. Clonar el repositorio
 
 ```bash
-# 1. Clonar el repositorio
-git clone [https://github.com/TU_USUARIO/NOMBRE_REPO.git](https://github.com/TU_USUARIO/NOMBRE_REPO.git)
+# Clona el proyecto
+git clone https://github.com/arnoldevs/sentiment-api.git
 
-# 2. Moverse a la rama de desarrollo
+# Entra a la carpeta
+cd sentiment-api
+
+# IMPORTANTE: Cámbiate a la rama de desarrollo
 git checkout develop
 ```
