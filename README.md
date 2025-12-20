@@ -60,23 +60,28 @@
 
 ---
 
-## 🚀 Cómo empezar (Setup)
+## 🚀 Configuración del Entorno (Setup)
 
-### Pre-requisitos
+Para garantizar la estabilidad del proyecto, requerimos el uso de **Java 17** y **Python 3.14**. Recomendamos usar [**mise-en-place**](https://mise.jdx.dev/) para gestionar estas versiones automáticamente, aunque puedes hacerlo de forma manual.
 
-1.  Tener instalado **Java 17 JDK**.
-2.  Tener instalado **Python 3.9+**.
-3.  Tener **Git** configurado.
-
-### 1. Clonar el repositorio
+### Guía de Inicio Rápido
 
 ```bash
-# Clona el proyecto
-git clone https://github.com/arnoldevs/sentiment-api.git
+# 1. Instalar mise (Omitir si ya lo tienes o prefieres instalación manual)
+# Guía oficial de instalación: https://mise.jdx.dev/getting-started.html
 
-# Entra a la carpeta
+# 2. Clonar el proyecto y entrar al directorio
+git clone https://github.com/arnoldevs/sentiment-api.git
 cd sentiment-api
 
-# IMPORTANTE: Cámbiate a la rama de desarrollo
+# 3. Cambiar a la rama de desarrollo
 git checkout develop
+
+# 4. Configurar el entorno con mise (Solo si instalaste mise en el paso 1)
+mise trust       # Autoriza la configuración local del proyecto
+mise install     # Instala Java 17 y Python 3.14 automáticamente
+
+# 5. Verificación de versiones
+java -version    # Debe mostrar 17.x
+python --version  # Debe mostrar 3.14.x
 ```
