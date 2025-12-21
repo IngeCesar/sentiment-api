@@ -1,15 +1,15 @@
-## 📋 Descripción
-
-## 🔗 Issue Relacionada
+## 📋 Descripción (breve resumen de los cambios)
 
 ## 🛠️ Tipo de cambio
 
-- [ ] 🐛 Bug fix (arreglo de error)
-- [ ] ✨ New feature (nueva funcionalidad)
-- [ ] 📚 Documentation (cambios en el README/docs)
+- [ ] 🐛 Bug fix (arregla un error)
+- [ ] ✨ Nueva funcionalidad (feature)
+- [ ] ♻️ Refactorización (cambios de código sin cambiar funcionalidad)
+- [ ] 📝 Documentación / Configuración
 
-## ✅ Checklist
+## ✅ Checklist de Auto-revisión
 
-- [ ] Mi código sigue las guías de estilo del proyecto.
-- [ ] He probado mis cambios localmente.
+- [ ] Mi código no tiene `print()` o logs basura olvidados.
+- [ ] He probado mis cambios localmente y no rompen nada obvio.
+- [ ] He realizado un `git pull origin develop` para asegurar que estoy al día.
 - [ ] He comentado las partes difíciles de entender.
