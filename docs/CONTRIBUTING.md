@@ -48,7 +48,9 @@ Formato: `tipo/descripcion-corta` (minúsculas y guiones).
 3.  **Pull Request (PR)**:
     - Abre el PR hacia `develop`.
     - Completa la checklist.
-    - Usa **"Squash and merge"** al finalizar.
+    - Solicita Revisión (Reviewers): Asigna a un compañero.
+    - Espera el "Approve" ✅.
+    - Realiza el Merge: Solo cuando tengas luz verde.
 
 ## 🧹 Limpieza (Post-Merge)
 
