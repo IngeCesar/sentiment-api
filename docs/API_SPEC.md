@@ -20,7 +20,7 @@ sequenceDiagram
     User->>Java: POST /sentiment (Texto)
     Note over Java: Valida formato y longitud
     Java->>Python: POST /sentiment (Interno)
-    Python-->>Java: JSON {prediction, probability}
+    Python-->>Java: JSON {prediction, probability, keywords, timestamp}
     Java-->>User: JSON Final (200 OK)
 ```
 
@@ -67,6 +67,7 @@ Es la interfaz pública que consumirá el Frontend o cliente externo.
 {
     "prediction": "Positivo",
     "probability": 0.92,
+    "keywords": ["excelente", "servicio"],
     "timestamp": "2099-01-01T00:00:00Z"
 }
 ```
@@ -76,6 +77,7 @@ Es la interfaz pública que consumirá el Frontend o cliente externo.
 | :--- | :--- | :--- |
 | `prediction` | `String` | Categoría: `"Positivo"`, `"Negativo"`, `"Neutro"`. |
 | `probability` | `Float` | Confianza del modelo (0.0 a 1.0). |
+| keywords | `Array[String]` | Palabras clave que influyeron en la predicción. |
 | `timestamp` | `String` | Fecha ISO 8601 UTC. |
 
 ---
@@ -156,6 +158,7 @@ Java actúa como _proxy_, limpiando el input y enviándolo al modelo.
 {
     "prediction": "Positivo",
     "probability": 0.98,
+    "keywords": ["excelente", "servicio"],
     "timestamp": "2099-01-01T00:00:00Z"
 }
 ```

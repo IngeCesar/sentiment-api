@@ -29,26 +29,9 @@
 
 ### Data Science (Modelo IA)
 
-- **Lenguaje:** Python 3.9+
+- **Lenguaje:** Python 3.14.2
 - **Librerías:** Pandas, NumPy, Scikit-learn
 - **Modelo:** Regresión Logística / TF-IDF (Baseline)
-
----
-
-## 👥 Equipo de Desarrollo (Squad 55)
-
-| Rol                | Miembro               | Stack     |
-| :----------------- | :-------------------- | :-------- |
-| **Data Scientist** | Sofia Elizabeth López | 🐍 Python |
-| **Data Scientist** | Harrison Tutalcha     | 🐍 Python |
-| **Data Scientist** | Arnold Vásquez        | 🐍 Python |
-| **Data Scientist** | Raquel Araniva        | 🐍 Python |
-| **Data Scientist** | Jose de Jesus Ruesga  | 🐍 Python |
-| **Backend Dev**    | Oscar Orlando Florez  | ☕ Java   |
-| **Backend Dev**    | Cesar Omar Ordoñez    | ☕ Java   |
-| **Backend Dev**    | Bryan Hernández       | ☕ Java   |
-| **Backend Dev**    | Agustin Reyes         | ☕ Java   |
-| **Backend Dev**    | Eluizer de Leon       | ☕ Java   |
 
 ---
 
@@ -62,12 +45,12 @@
 
 ## 🚀 Configuración del Entorno (Setup)
 
-Para garantizar la estabilidad del proyecto, requerimos el uso de **Java 17** y **Python 3.14**. Recomendamos usar [**mise-en-place**](https://mise.jdx.dev/) para gestionar estas versiones automáticamente, aunque puedes hacerlo de forma manual.
+Para garantizar la estabilidad del proyecto, requerimos el uso de **Java 17** y **Python 3.14.2** Recomendamos usar [**mise-en-place**](https://mise.jdx.dev/) para gestionar estas versiones automáticamente, aunque puedes hacerlo de forma manual.
 
 ### Guía de Inicio Rápido
 
 ```bash
-# 1. Instalar mise (Omitir si ya lo tienes o prefieres instalación manual)
+# 1. Instalar mise (Omitir si ya lo tienes o prefieres instalación manual, para Windows se recomienda instalación manual)
 # Guía oficial de instalación: https://mise.jdx.dev/getting-started.html
 
 # 2. Clonar el proyecto y entrar al directorio
