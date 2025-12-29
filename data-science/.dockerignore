@@ -1,0 +1,43 @@
+# ========================
+# 1. PYTHON & COMPILATION
+# ========================
+# Python bytecode (generated automatically)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ========================
+# 2. VIRTUAL ENVIRONMENTS
+# ========================
+# CRITICAL: Never copy local virtual environments to the container.
+# The container creates its own environment.
+venv/
+.venv/
+env/
+ds-api/venv/
+
+# ========================
+# 3. DATA SCIENCE & NOTEBOOKS
+# ========================
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Optional: Ignore large raw data if you want to keep the image light
+# (Uncomment if your 'raw' folder is huge, e.g., >500MB)
+# data/raw/
+
+# ========================
+# 4. GIT & IDE CONFIGS
+# ========================
+.git
+.gitignore
+.idea/
+.vscode/
+
+# ========================
+# 5. SECRETS
+# ========================
+# Never copy environment variable files containing keys
+.env
+.env.local

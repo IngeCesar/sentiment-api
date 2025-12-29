@@ -1,18 +1,85 @@
-# Java
-target/
-*.class
-.idea/
-*.iml
-.vscode/
-
-# Python
-__pycache__/
-*.py[cod]
-.ipynb_checkpoints/
-venv/
-env/
-.env
-
-# System
+# ========================
+# 1. GENERAL / OS / IDEs
+# ========================
+# OS specific files
 .DS_Store
-.mise/
+Thumbs.db
+Desktop.ini
+
+# IDE Configurations (IntelliJ, VS Code, Eclipse)
+.idea/
+.vscode/
+*.swp
+*.iml
+.classpath
+.project
+.settings/
+
+# General Logs
+*.log
+
+# ========================
+# 2. BACKEND (JAVA / SPRING BOOT)
+# ========================
+# Build output (Important: Do not track compiled binaries)
+target/
+
+# Java binaries and packages
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Maven wrapper (Optional: ignored if you rely solely on Docker)
+# .mvn/
+# mvnw
+# mvnw.cmd
+
+# ========================
+# 3. DATA SCIENCE (PYTHON)
+# ========================
+# Python Bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ds-api/venv/
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# ========================
+# 4. DATA & MODELS
+# ========================
+# Ignore raw/large datasets
+data-science/data/raw/*
+data-science/data/processed/*
+!data-science/data/raw/.gitkeep
+!data-science/data/processed/.gitkeep
+
+# Models
+# NOTE: .joblib is allowed as per requirements (lightweight model)
+# *.joblib  <-- Commented out to allow upload
+*.h5
+*.pt
+*.onnx
+
+# ========================
+# 5. DOCKER & SECURITY
+# ========================
+# Environment variables with secrets
+.env
+.env.local
+.env.production
+
+# Local Volumes
+postgres-data/

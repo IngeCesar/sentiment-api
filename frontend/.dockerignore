@@ -1,0 +1,35 @@
+# ========================
+# 1. OS & SYSTEM FILES
+# ========================
+# Operating system metadata that should not pollute the container
+.DS_Store
+Thumbs.db
+
+# ========================
+# 2. IDE CONFIGURATIONS
+# ========================
+# VS Code, IntelliJ, etc. settings
+.vscode/
+.idea/
+
+# ========================
+# 3. GIT & VERSION CONTROL
+# ========================
+# Version control history and configuration
+.git
+.gitignore
+
+# ========================
+# 4. LOGS & DOCS
+# ========================
+# Local logs or documentation files
+*.log
+README.md
+LICENSE
+
+# ========================
+# 5. NODE MODULES (FUTURE PROOFING)
+# ========================
+# If you add npm/node later, never copy this folder
+node_modules/
+npm-debug.log

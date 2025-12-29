@@ -1,0 +1,165 @@
+/* 1. Font Import (Roboto Complete - All weights/italics) */
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+
+/* 2. Global Reset & Best Practices */
+* {
+    box-sizing: border-box; /* Ensures padding doesn't increase total element width */
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    /* Primary font stack with safe fallbacks */
+    font-family: "Roboto", "Segoe UI", Tahoma, sans-serif;
+
+    /* Gradient background */
+    background: linear-gradient(135deg, #4f46e5, #9333ea);
+
+    /* Flexbox for perfect centering */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* MOBILE FIRST: min-height ensures background covers full screen even with scroll */
+    min-height: 100vh;
+
+    /* Safe padding for small mobile screens */
+    padding: 20px;
+
+    color: #333;
+}
+
+.container {
+    background: white;
+
+    /* MOBILE FIRST: Take full available width by default */
+    width: 100%;
+
+    /* Constraint for larger screens (Tablet/Desktop) */
+    max-width: 420px;
+
+    padding: 25px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+
+    /* Auto margins for horizontal centering as fallback */
+    margin: auto;
+}
+
+.app-logo {
+    height: 50px; /* Mobile base size */
+    width: auto; /* Maintain aspect ratio */
+    margin-bottom: 1rem; /* Spacing from title */
+    border-radius: 10px; /* Slight rounding for aesthetics */
+}
+
+h1 {
+    color: #1f2937;
+    font-size: 1.5rem; /* Relative units for accessibility */
+    font-weight: 700; /* Bold */
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+p {
+    color: #6b7280;
+    font-size: 0.95rem;
+    font-weight: 400; /* Regular */
+    margin-bottom: 1.5rem;
+}
+
+textarea {
+    width: 100%;
+    height: 120px;
+    margin-bottom: 1rem;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    resize: none;
+    font-family: inherit;
+    font-size: 1rem; /* 16px base size prevents auto-zoom on iOS */
+    transition:
+        border-color 0.3s,
+        box-shadow 0.3s;
+
+    /* UI Reset for iOS default styles */
+    -webkit-appearance: none;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #4f46e5;
+    /* Accessible and aesthetic focus ring */
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+button {
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    padding: 14px 24px; /* Generous touch target area */
+    cursor: pointer;
+    border-radius: 8px;
+    font-weight: 500; /* Medium */
+    width: 100%;
+    font-size: 1rem;
+    transition:
+        background-color 0.3s,
+        transform 0.1s;
+
+    /* Prevents blue highlight on tap (Mobile) */
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:hover {
+    background-color: #4338ca;
+}
+
+button:active {
+    transform: scale(0.98); /* Tactile press feedback */
+}
+
+#result {
+    margin-top: 1.5rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    min-height: 20px; /* Prevents layout shifts */
+}
+
+/* Keyword Tags Styling */
+.keywords-box {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.keyword-tag {
+    background-color: #e0e7ff;
+    color: #4338ca;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* =========================================
+   MEDIA QUERIES (Desktop Adjustments)
+   ========================================= */
+@media (min-width: 600px) {
+    .container {
+        padding: 40px; /* Increased spacing for larger screens */
+    }
+
+    h1 {
+        font-size: 1.8rem; /* Scaled up typography for desktop */
+    }
+
+    /* Logo grows on desktop */
+    .app-logo {
+        height: 64px;
+    }
+}

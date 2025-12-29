@@ -1,26 +1,39 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Analizador de Sentimientos</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<div class="container">
-    <h1>Analizador de Sentimientos</h1>
-    <p>Favor ingresar su opinión sobre el producto.</p>
+        <meta
+            name="description"
+            content="AI Sentiment Analysis Tool by CesiumFlow"
+        />
+        <title>Analizador de Sentimientos | CesiumFlow</title>
 
-    <textarea 
-        id="textInput" 
-        placeholder="Escribe aquí el comentario del cliente..."
-    ></textarea>
+        <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
 
-    <button onclick="analyzeSentiment()">Analizar Sentimiento</button>
+        <link rel="stylesheet" href="css/styles.css" />
 
-    <div id="result"></div>
-</div>
+        <script src="js/script.js" defer></script>
+    </head>
+    <body>
+        <main class="container">
+            <img src="assets/logo.svg" alt="CesiumFlow Logo" class="app-logo" />
 
-<script src="script.js"></script>
-</body>
+            <h1>Analizador de Sentimientos</h1>
+            <p>Ingresa la opinión del cliente para detectar emociones.</p>
+
+            <textarea
+                id="textInput"
+                placeholder="Ej: El servicio fue excelente y rápido..."
+                aria-label="Comentario del cliente"
+            ></textarea>
+
+            <button onclick="analyzeSentiment()">Analizar Sentimiento</button>
+
+            <div id="result" aria-live="polite"></div>
+
+            <div id="keywords-container" class="keywords-box"></div>
+        </main>
+    </body>
 </html>

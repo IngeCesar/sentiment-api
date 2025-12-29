@@ -1,0 +1,43 @@
+# ========================
+# 1. BUILD ARTIFACTS
+# ========================
+# CRITICAL: Ignore the 'target' directory.
+# This contains binaries compiled on Windows which are not compatible with Linux.
+# Docker will generate its own 'target' folder inside the container.
+target/
+
+# ========================
+# 2. IDE CONFIGURATIONS
+# ========================
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# ========================
+# 3. MAVEN WRAPPERS
+# ========================
+# Since we use a Docker image with Maven pre-installed,
+# we do not need the local wrapper scripts inside the container.
+.mvn/
+mvnw
+mvnw.cmd
+
+# ========================
+# 4. GIT & VERSION CONTROL
+# ========================
+.git
+.gitignore
+
+# ========================
+# 5. LOGS & DOCS
+# ========================
+*.log
+HELP.md
