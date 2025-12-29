@@ -10,6 +10,10 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from nltk.corpus import stopwords
 
+# --- NLTK PATH CONFIGURATION (Fix for Docker) ---
+# Explicitly tell NLTK where the data was downloaded in the Dockerfile
+nltk.data.path.append('/usr/local/share/nltk_data')
+
 # ==========================================
 # 1. SERVER SETUP & INITIALIZATION
 # ==========================================
@@ -18,6 +22,7 @@ app = FastAPI(title="SentimentAPI - Team 55", version="0.1 alpha")
 # --- PATH RESOLUTION ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_FILENAME = "sentiment_model_alpha.joblib"
+# Points to ../models/ relative to the script location
 MODEL_PATH = os.path.join(BASE_DIR, "..", "models", MODEL_FILENAME)
 MODEL_PATH = os.path.normpath(MODEL_PATH)
 
@@ -27,7 +32,7 @@ print(f"📍 API Directory: {BASE_DIR}")
 
 # A. Stopwords (Visual Filter - Extended)
 try:
-    nltk.download('stopwords', quiet=True)
+    # This will now look specifically in /usr/local/share/nltk_data
     base_stopwords = set(stopwords.words('spanish'))
 
     # Custom Blacklist: Words that are mathematically useful but visually noise
@@ -43,10 +48,10 @@ try:
     }
 
     BLACKLIST_VISUAL = base_stopwords.union(custom_stopwords)
-    print("✅ NLTK Stopwords + Custom Blacklist loaded.")
+    print("✅ NLTK Stopwords + Custom Blacklist loaded from explicit path.")
 
 except Exception as e:
-    print(f"⚠️ NLTK Error: {e}. Visual filter disabled.")
+    print(f"⚠️ NLTK Error: {e}. Attempting emergency load...")
     BLACKLIST_VISUAL = set()
 
 # B. Model Loading
@@ -106,9 +111,15 @@ def extract_keywords_clean(clean_text, pipeline, top_n=3):
         candidates = {}
         for col_idx in tfidf_vector.nonzero()[1]:
             word = feature_names[col_idx]
-            coef = clf.coef_[class_idx][col_idx]
-            if coef > 0:
-                candidates[word] = coef
+            # Assumes binary classification or access to coef_[class_idx]
+            # Note: For multi-class, coef_ has shape [n_classes, n_features]
+            if hasattr(clf, 'coef_'):
+                coef = clf.coef_[class_idx][col_idx]
+                if coef > 0:
+                    candidates[word] = coef
+            else:
+                # Fallback if coef_ is not available (e.g., Random Forest)
+                candidates[word] = tfidf_vector[0, col_idx]
 
         sorted_candidates = sorted(candidates.items(), key=lambda item: item[1], reverse=True)
 
@@ -160,7 +171,7 @@ def predict_endpoint(request: ReviewRequest):
     current_time = datetime.now().isoformat()
 
     return {
-        "prediction": pred_label,
+        "prediction": str(pred_label),
         "probability": round(prob_score, 2),
         "keywords": clean_kws,
         "timestamp": current_time

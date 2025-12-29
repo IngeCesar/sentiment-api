@@ -3,9 +3,9 @@
  * Team: H12-25-L-EQUIPO-55 (CesiumFlow)
  */
 
-// Configuration constants
-// If you changed the frontend port in docker-compose, this URL remains localhost:8080 (Backend)
-const API_URL = "http://localhost:8080/api/reviews/analyze";
+// ✅ CONFIGURATION UPDATE
+// Points to the versioned Java API
+const API_URL = "http://localhost:8080/api/v1/sentiment";
 
 async function analyzeSentiment() {
     // 1. DOM Elements
@@ -23,25 +23,25 @@ async function analyzeSentiment() {
     // 4. Frontend Validation
     if (!text) {
         resultDiv.innerHTML =
-            "<span style='color:red'>⚠️ El campo es obligatorio.</span>";
+            "<span style='color:red'>⚠️ This field is required.</span>";
         return;
     }
     if (text.length < 3) {
         resultDiv.innerHTML =
-            "<span style='color:orange'>⚠️ Mínimo 3 caracteres.</span>";
+            "<span style='color:orange'>⚠️ Minimum 3 characters required.</span>";
         return;
     }
     if (text.length > 5000) {
         resultDiv.innerHTML =
-            "<span style='color:red'>⚠️ Máximo 5000 caracteres.</span>";
+            "<span style='color:red'>⚠️ Maximum 5000 characters allowed.</span>";
         return;
     }
 
     // Show loading state
-    resultDiv.innerHTML = "⏳ Analizando...";
+    resultDiv.innerHTML = "⏳ Analyzing...";
 
     try {
-        // 5. API Request (Using Async/Await)
+        // 5. API Request
         const response = await fetch(API_URL, {
             method: "POST",
             headers: {
@@ -50,42 +50,42 @@ async function analyzeSentiment() {
             body: JSON.stringify({ text: text }),
         });
 
-        // 6. Response Parsing
         const data = await response.json();
 
-        // Handle logical errors from the backend (e.g. Connection refused to Python)
+        // 6. Error Handling (Network or Logic)
+        if (!response.ok) {
+            // Should capture the Spring Boot 400 Bad Request message if available
+            throw new Error(data.message || data.error || "Server Error");
+        }
+
         if (
-            !response.ok ||
-            data.prediction === "ERROR_CONEXION" ||
+            data.prediction === "CONNECTION_ERROR" ||
             data.prediction === "ERROR"
         ) {
-            throw new Error(data.error || "Error interno del servidor");
+            throw new Error("Internal Engine Unavailable");
         }
 
         // 7. Render Success Result
-        // Determine color based on sentiment
-        const color = data.prediction === "Positivo" ? "#16a34a" : "#dc2626"; // Green or Red
+        const color = data.prediction === "Positivo" ? "#16a34a" : "#dc2626";
 
         resultDiv.innerHTML = `
             <div style="font-size: 1.2em; color: ${color}; font-weight: bold;">
                 ${data.prediction.toUpperCase()}
             </div>
-            <div>Confianza: ${(data.probability * 100).toFixed(1)}%</div>
-            <small style="color: #888">Procesado: ${data.timestamp}</small>
+            <div>Confidence: ${(data.probability * 100).toFixed(1)}%</div>
+            <small style="color: #888">Processed: ${data.timestamp}</small>
         `;
 
-        // Render Keywords (if available)
         if (data.keywords && data.keywords.length > 0) {
             keywordsDiv.innerHTML = data.keywords
                 .map((word) => `<span class="keyword-tag">#${word}</span>`)
                 .join("");
         }
     } catch (error) {
-        // 8. Error Handling
         console.error("Analysis failed:", error);
         resultDiv.innerHTML = `
-            ❌ Error de conexión.<br>
-            <small>Verifica que el Backend (Docker) esté corriendo.</small>
+            ❌ Connection Error.<br>
+            <small>${error.message}</small>
         `;
     }
 }

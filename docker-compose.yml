@@ -3,63 +3,46 @@ services:
   # 1. CORE SERVICE (Java Spring Boot)
   # ==========================================
   core:
+    image: cesiumflow/core:latest
     container_name: cesium-core
     build:
       context: ./core-service
       dockerfile: Dockerfile
-      # CRITICAL: We target 'builder' stage for development to have Maven available.
-      target: builder
     ports:
       - "8080:8080"
     environment:
-      # Connection to the Python Sentiment Engine
       - SENTIMENT_API_URL=http://sentiment-engine:5000
-      # Enable Hot Reload for Spring Boot DevTools
-      - SPRING_DEVTOOLS_RESTART_ENABLED=true
-    volumes:
-      # Sync local source code with the container for development
-      - ./core-service:/app
-      # Persist Maven dependencies (drastically speeds up re-builds)
-      - maven_data:/root/.m2
     depends_on:
       - sentiment-engine
-    # Explicit command for Development (matches the Builder stage CMD)
-    command: mvn spring-boot:run
+    restart: always
 
   # ==========================================
   # 2. SENTIMENT ENGINE (Python FastAPI)
   # ==========================================
   sentiment-engine:
-    container_name: cesium-analyzer
+    image: cesiumflow/engine:latest
+    container_name: cesium-engine
     build:
       context: ./data-science
       dockerfile: Dockerfile
-      # CRITICAL: We target 'builder' stage to use the venv and dev tools.
-      target: builder
     ports:
       - "5000:5000"
-    volumes:
-      # Sync local source code for Hot Reload (uvicorn --reload)
-      - ./data-science:/app
     environment:
       - PYTHONDONTWRITEBYTECODE=1
-    # Explicit command to ensure Hot Reload is active
-    command: uvicorn ds-api.main:app --host 0.0.0.0 --port 5000 --reload
+    restart: always
 
   # ==========================================
   # 3. FRONTEND (Nginx Static)
   # ==========================================
   frontend:
+    image: cesiumflow/frontend:latest
     container_name: cesium-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      # Frontend doesn't use multi-stage target for dev, simple build is enough.
     ports:
       - "80:80"
-    volumes:
-      # Mount local files to Nginx for instant updates in browser
-      - ./frontend:/usr/share/nginx/html
+    restart: always
 
 # ==========================================
 # 4. VOLUMES

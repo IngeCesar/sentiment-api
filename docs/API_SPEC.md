@@ -1,174 +1,164 @@
-# 📜 Contrato de Interfaz (API Specification)
+# 📜 API Interface Contract (API Specification) - Squad 55
 
-| Metadato    | Detalle                                 |
-| :---------- | :-------------------------------------- |
-| **Versión** | 1.0.1                                   |
-| **Estado**  | ✅ Aprobado                             |
-| **Equipos** | Data Science (Python) ↔ Back-End (Java) |
+| Metadata         | Details                                               |
+| :--------------- | :---------------------------------------------------- |
+| **Version**      | **1.1.0-dev**                                         |
+| **Status**       | 🚧 **In Development / Pending Review**                |
+| **Architecture** | **Middleware Pattern** (Java Gateway ↔ Python Engine) |
+| **Teams**        | Data Science (Python) ↔ Back-End (Java)               |
 
-## 🧠 Arquitectura del Flujo
+## 🧠 Architectural Flow
 
-Este diagrama representa el flujo de datos ("Happy Path") entre los servicios:
+This diagram represents the "Happy Path" data flow. Note how **Java acts as a Middleware**, sanitizing input before it reaches the core inference engine.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant User as 👤 Usuario
-    participant Java as ☕ Backend (8080)
-    participant Python as 🐍 Data Science (5000)
+    participant User as 👤 User / Frontend
+    participant Java as ☕ Java Middleware (Gateway)
+    participant Python as 🐍 Python Engine (Internal)
 
-    User->>Java: POST /sentiment (Texto)
-    Note over Java: Valida formato y longitud
-    Java->>Python: POST /sentiment (Interno)
-    Python-->>Java: JSON {prediction, probability, keywords, timestamp}
-    Java-->>User: JSON Final (200 OK)
+    Note over Java: Port 8080 (Public)
+    Note over Python: Port 5000 (Internal)
+
+    User->>Java: POST /api/v1/sentiment
+    Note over Java: 1. Validation (@Valid)<br/>2. DTO Mapping
+    Java->>Python: POST /predict
+    Note over Python: 1. NLTK Processing<br/>2. TF-IDF Inference
+    Python-->>Java: Raw Prediction JSON
+    Note over Java: 1. Error Handling<br/>2. Response Formatting
+    Java-->>User: Final JSON (200 OK)
 ```
 
 ---
 
-## 🎯 OBJETIVO DEL CONTRATO
+## 🎯 OBJECTIVE
 
-Este documento define el formato exacto de comunicación y reglas de negocio entre:
+This document defines the strict communication rules and business logic between:
 
-- **API Back-End (Java Spring Boot)** - Puerto `8080`
-- **API Data Science (Python FastAPI)** - Puerto `5000`
+1.  **Java Middleware (Public Layer):** Handles traffic, validation, security, and versioning.
+2.  **Python Engine (Private Layer):** Dedicated exclusively to Machine Learning inference tasks.
 
 ---
 
-## 🚀 Parte 1: API Back-End (Java → Usuario)
+## 🚀 Part 1: Public API (Java Middleware)
 
-Es la interfaz pública que consumirá el Frontend o cliente externo.
+The interface consumed by the Frontend. It acts as the "Bouncer," ensuring no malformed data reaches the internal engine.
 
-### Endpoint Principal: Clasificar Sentimiento
+### Main Resource: Sentiment Analysis
 
-- **URL:** `http://localhost:8080/sentiment`
-- **Método:** `POST`
+- **URL:** `http://localhost:8080/api/v1/sentiment`
+- **Method:** `POST`
 - **Content-Type:** `application/json`
 
-### 📥 Ejemplo Request (Entrada)
+### 📥 Request Example (Input)
 
 ```json
 {
-    "text": "El servicio fue excelente"
+    "text": "The service was excellent and arrived very fast."
 }
 ```
 
-**Reglas de Validación (Java):**
+**Validation Rules (Java Bean Validation):**
 
-1.  `text` es **OBLIGATORIO** (No null).
-2.  **Longitud:** Mínimo **3**, Máximo **5000** caracteres.
-3.  **Contenido:** No puede ser solo espacios en blanco.
-4.  **Tipo:** Debe ser String estricto.
-5.  **Encoding:** Se debe asegurar formato **UTF-8** para soportar tildes y ñ.
+1.  `text`: **@NotBlank** (Must not be null or empty).
+2.  `text`: **@Size(min=3, max=5000)** (Length constraints).
+3.  **Encoding:** UTF-8 required (Must support special characters like `ñ`, `ü`).
 
-### 📤 Ejemplo de Response (200 OK)
+### 📤 Response Example (200 OK)
 
 ```json
 {
     "prediction": "Positivo",
     "probability": 0.92,
-    "keywords": ["excelente", "servicio"],
-    "timestamp": "2099-01-01T00:00:00Z"
+    "keywords": ["excelente", "rápido", "servicio"],
+    "timestamp": "2025-12-29T10:00:00Z"
 }
 ```
 
-**Diccionario de Datos:**
-| Campo | Tipo | Descripción |
+**Data Dictionary:**
+| Field | Type | Description |
 | :--- | :--- | :--- |
-| `prediction` | `String` | Categoría: `"Positivo"`, `"Negativo"`, `"Neutro"`. |
-| `probability` | `Float` | Confianza del modelo (0.0 a 1.0). |
-| keywords | `Array[String]` | Palabras clave que influyeron en la predicción. |
-| `timestamp` | `String` | Fecha ISO 8601 UTC. |
+| `prediction` | `String` | Model label: `"Positivo"`, `"Negativo"`, `"Neutro"`. |
+| `probability` | `Float` | Model confidence score (0.00 to 1.00). |
+| `keywords` | `List<String>` | Tokens filtered by NLTK + Business Blacklist. |
+| `timestamp` | `String` | ISO 8601 timestamp of the processing time. |
 
 ---
 
-### ⚠️ Errores Públicos (Códigos HTTP)
+### ⚠️ Public Error Handling
 
-Errores que el usuario final puede recibir si no cumple las reglas.
+Standard HTTP codes returned to the user when business rules are violated.
 
 #### 🔴 Error 400: Bad Request
 
-**Escenario: Campo 'text' vacío o ausente**
+Triggered automatically by the Middleware when validation fails (e.g., text too short).
 
 ```json
 {
-    "error": "El campo 'text' es requerido",
-    "code": 400,
-    "timestamp": "2099-01-01T00:00:00Z"
+    "timestamp": "2025-12-29T10:05:00Z",
+    "status": 400,
+    "error": "Bad Request",
+    "path": "/api/v1/sentiment"
 }
 ```
 
-**Escenario: Texto muy corto (< 3 caracteres)**
+#### 🔥 Error 500: Internal Service Failure
+
+Triggered if the internal Python engine is unreachable. The Middleware catches the exception to prevent a system crash.
 
 ```json
 {
-    "error": "El texto debe tener al menos 3 caracteres",
-    "code": 400,
-    "timestamp": "2099-01-01T00:00:00Z"
-}
-```
-
-**Escenario: Texto muy largo (> 5000 caracteres)**
-
-```json
-{
-    "error": "El texto no puede exceder 5000 caracteres",
-    "code": 400,
-    "timestamp": "2099-01-01T00:00:00Z"
-}
-```
-
-#### 🔥 Error 500: Internal Server Error
-
-**Escenario: Fallo inesperado en el modelo o API Python**
-
-```json
-{
-    "error": "Error al procesar la predicción. Intente nuevamente.",
-    "code": 500,
-    "timestamp": "2099-01-01T00:00:00Z"
+    "prediction": "CONNECTION_ERROR",
+    "probability": 0.0,
+    "keywords": [],
+    "timestamp": null
 }
 ```
 
 ---
 
-## 🔌 Parte 2: API Interna (Java → Python)
+## 🔌 Part 2: Internal API (Python Engine)
 
-Esta API es privada. El usuario final **nunca** interactúa directamente con el puerto `5000`.
+This API is **private**. External users cannot access port `5000` directly.
 
-### Endpoint Interno: Motor de Inferencia
+### Internal Resource: Inference
 
-- **URL Base:** `http://localhost:5000`
-- **Path:** `/sentiment`
-- **Método:** `POST`
+- **Internal Service:** `http://sentiment-engine:5000`
+- **Path:** `/predict` (MLOps Standard)
+- **Method:** `POST`
 
-### 📥 Internal Request (Java envía a Python)
+### 📥 Internal Request (Java → Python)
 
-Java actúa como _proxy_, limpiando el input y enviándolo al modelo.
+The Java Middleware forwards the sanitized text.
 
 ```json
 {
-    "text": "Texto validado por Java"
+    "text": "El servicio fue excelente y llegó muy rápido."
 }
 ```
 
-### 📤 Internal Response (Python responde a Java)
+### 📤 Internal Response (Python → Java)
+
+The Python Engine returns raw calculation data.
 
 ```json
 {
     "prediction": "Positivo",
-    "probability": 0.98,
-    "keywords": ["excelente", "servicio"],
-    "timestamp": "2099-01-01T00:00:00Z"
+    "probability": 0.92341,
+    "keywords": ["excelente", "rápido"],
+    "timestamp": "..."
 }
 ```
 
-### 🛠️ Manejo de Errores Internos
+---
 
-Guía para el desarrollador de Backend sobre cómo interpretar las respuestas de Python.
+## 🩺 DevOps & Health Checks
 
-| Código HTTP (Python)  | Significado                                                                 | Acción Requerida en Java                                         |
-| :-------------------- | :-------------------------------------------------------------------------- | :--------------------------------------------------------------- |
-| **200 OK**            | Todo correcto.                                                              | Reenviar JSON al usuario.                                        |
-| **422 Unprocessable** | Java envió datos que no cumplen el esquema (campo faltante o tipo erróneo). | 🐛 **Bug en Java**: Revisar el DTO o serialización hacia Python. |
-| **500 Server Error**  | Python crasheó (Bug en modelo).                                             | Devolver **500** genérico al usuario.                            |
+Endpoints designed for Container Orchestration (Docker) and Integration Testing.
+
+| Component  | Method | Endpoint               | Type            | Purpose                                             |
+| :--------- | :----- | :--------------------- | :-------------- | :-------------------------------------------------- |
+| **Java**   | `GET`  | `/`                    | **Liveness**    | Confirms the Middleware container is running.       |
+| **Java**   | `GET`  | `/api/v1/test?text=ok` | **Integration** | Tests the full pipeline (Java ↔ Python connection). |
+| **Python** | `GET`  | `/`                    | **Liveness**    | Confirms FastAPI loaded the NLTK data and Model.    |

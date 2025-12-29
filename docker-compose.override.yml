@@ -1,0 +1,33 @@
+services:
+  # ==========================================
+  # 1. CORE SERVICE (Development Overrides)
+  # ==========================================
+  core:
+    image: cesiumflow/core:dev
+    build:
+      target: builder # CRITICAL: Target 'builder' stage for development.
+    environment:
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true # Enable Hot Reload.
+    volumes:
+      - ./core-service:/app # Sync local source code.
+      - maven_data:/root/.m2 # Persist Maven dependencies.
+    command: mvn spring-boot:run
+
+  # ==========================================
+  # 2. SENTIMENT ENGINE (Development Overrides)
+  # ==========================================
+  sentiment-engine:
+    image: cesiumflow/engine:dev
+    build:
+      target: builder # CRITICAL: Target 'builder' stage to use dev tools.
+    volumes:
+      - ./data-science:/app # Sync local source code for Hot Reload.
+    command: uvicorn ds-api.main:app --host 0.0.0.0 --port 5000 --reload
+
+  # ==========================================
+  # 3. FRONTEND (Development Overrides)
+  # ==========================================
+  frontend:
+    image: cesiumflow/frontend:dev
+    volumes:
+      - ./frontend:/usr/share/nginx/html # Mount local files for instant updates.
