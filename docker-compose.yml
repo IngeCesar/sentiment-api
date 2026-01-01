@@ -1,6 +1,30 @@
 services:
   # ==========================================
-  # 1. CORE SERVICE (Java Spring Boot)
+  # 1. DATABASE (PostgreSQL)
+  # ==========================================
+  db:
+    image: postgres:15-alpine
+    container_name: cesium-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--auth-local=scram-sha-256 --auth-host=scram-sha-256
+    healthcheck:
+      # Use pg_isready to ensure the DB is fully started before Java connects
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    restart: always
+
+  # ==========================================
+  # 2. CORE SERVICE (Java Spring Boot)
   # ==========================================
   core:
     image: cesiumflow/core:latest
@@ -12,12 +36,19 @@ services:
       - "8080:8080"
     environment:
       - SENTIMENT_API_URL=http://sentiment-engine:5000
+      # Injection of Secrets from .env to Java
+      - DB_URL=r2dbc:postgresql://db:5432/${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
     depends_on:
-      - sentiment-engine
+      sentiment-engine:
+        condition: service_healthy
+      db:
+        condition: service_healthy # 🚨 Java waits for the DB to be ready
     restart: always
 
   # ==========================================
-  # 2. SENTIMENT ENGINE (Python FastAPI)
+  # 3. SENTIMENT ENGINE (Python FastAPI)
   # ==========================================
   sentiment-engine:
     image: cesiumflow/engine:latest
@@ -29,10 +60,16 @@ services:
       - "5000:5000"
     environment:
       - PYTHONDONTWRITEBYTECODE=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     restart: always
 
   # ==========================================
-  # 3. FRONTEND (Nginx Static)
+  # 4. FRONTEND (Nginx Static)
   # ==========================================
   frontend:
     image: cesiumflow/frontend:latest
@@ -45,7 +82,8 @@ services:
     restart: always
 
 # ==========================================
-# 4. VOLUMES
+# 5. PERSISTENT VOLUMES
 # ==========================================
 volumes:
-  maven_data:
+  maven-data:
+  postgres-data: # 🚨 Essential to keep your data after restart

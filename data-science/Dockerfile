@@ -33,8 +33,9 @@ RUN useradd -m -u 1001 ml-service
 # Grant permissions to user for app, venv, AND the new nltk_data folder
 RUN chown -R ml-service:ml-service /app /opt/venv /usr/local/share/nltk_data
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD curl --fail http://localhost:5000/ || exit 1
+# Healthcheck pointing to our custom health endpoint
+HEALTHCHECK --interval=20s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl --fail http://localhost:5000/health || exit 1
 
 USER ml-service
 EXPOSE 5000
@@ -71,8 +72,9 @@ COPY . .
 # Final Permissions
 RUN chown -R ml-service:ml-service /app /usr/local/share/nltk_data
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD curl --fail http://localhost:5000/ || exit 1
+# Healthcheck pointing to our custom health endpoint
+HEALTHCHECK --interval=20s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl --fail http://localhost:5000/health || exit 1
 
 USER ml-service
 EXPOSE 5000

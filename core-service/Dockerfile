@@ -27,9 +27,9 @@ COPY src ./src
 # 6. Permissions for Dev
 RUN chown -R core-service:core-service /app
 
-# 7. Healthcheck (CRITICAL for Docker Compose 'depends_on')
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD curl --fail http://localhost:8080/ || exit 1
+# 7. Healthcheck pointing to Spring Boot Actuator
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD curl --fail http://localhost:8080/actuator/health || exit 1
 
 # 8. Set User & Port
 USER core-service
@@ -65,9 +65,9 @@ COPY --from=builder /app/target/*.jar app.jar
 # Permissions
 RUN chown core-service:core-service app.jar
 
-# Production Healthcheck
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD curl --fail http://localhost:8080/ || exit 1
+# Production Healthcheck pointing to Spring Boot Actuator
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD curl --fail http://localhost:8080/actuator/health || exit 1
 
 USER core-service
 EXPOSE 8080
