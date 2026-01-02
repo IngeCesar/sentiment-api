@@ -1,0 +1,61 @@
+# ==========================================
+# CESIUMFLOW CONFIGURATION
+# ==========================================
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: Sentiment-Core
+
+  # Reactive Database (R2DBC)
+  r2dbc:
+    url: ${DB_URL:r2dbc:postgresql://localhost:5432/cesium_sentiment_db}
+    username: ${DB_USER:cesium_user}
+    password: ${DB_PASSWORD:cesium_password}
+
+  sql:
+    init:
+      mode: always
+
+# ==========================================
+# CUSTOM PROPERTIES
+# ==========================================
+app:
+  sentiment-engine:
+    # Allows overriding via Docker env var PYTHON_ENGINE_URL
+    # Default is localhost for local development outside Docker
+    url: ${PYTHON_ENGINE_URL:http://localhost:5000}
+
+# ==========================================
+# MONITORING
+# ==========================================
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+# ==========================================
+# LOGGING
+# ==========================================
+logging:
+  level:
+    "[org.springframework.data.r2dbc]": DEBUG
+
+# ==========================================
+# OPENAPI / SWAGGER
+# ==========================================
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    use-root-path: true
+  show-actuator: true

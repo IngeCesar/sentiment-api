@@ -2,13 +2,12 @@ services:
   # ==========================================
   # 1. CORE SERVICE (Development Overrides)
   # ==========================================
-  core:
+  core-service:
     image: cesiumflow/core:dev
     build:
       target: builder
     environment:
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
-      # We ensure dev environment variables are present here too
       - DB_URL=r2dbc:postgresql://db:5432/${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -21,8 +20,6 @@ services:
   # 2. DATABASE (Development Persistence)
   # ==========================================
   db:
-    # In development, we map the DB data to a local folder
-    # so you can easily delete it if you want to reset the DB.
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -39,9 +36,11 @@ services:
     command: uvicorn ds-api.main:app --host 0.0.0.0 --port 5000 --reload
 
   # ==========================================
-  # 4. FRONTEND
+  # 4. FRONTEND (Hot Reload + Config)
   # ==========================================
   frontend:
     image: cesiumflow/frontend:dev
     volumes:
+      # Hot Reload for HTML/JS/CSS
       - ./frontend:/usr/share/nginx/html
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro

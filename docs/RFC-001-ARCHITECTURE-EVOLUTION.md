@@ -72,6 +72,16 @@ Adopción de la metodología **The Twelve-Factor App**.
 - **Health Checks:** Endpoints de Actuator (`/actuator/health`) integrados con los Healthchecks de Docker para reinicio automático de contenedores.
 - **Global Error Handling:** Captura centralizada de excepciones para evitar exponer "Stack Traces" al cliente final.
 
+### 3.7. Estrategia de Datos: Modelo de Bitácora (Append-Only)
+
+Se define arquitectónicamente el comportamiento de persistencia como un **Log de Auditoría (Audit Trail)** en lugar de un diccionario de valores únicos.
+
+- **Comportamiento Definido:** El sistema **permitirá duplicidad** de textos y predicciones en la base de datos. Si un usuario envía una cadena tres veces, se generarán tres registros distintos con timestamps diferentes.
+- **Justificación (ADR):**
+    1.  **Trazabilidad Temporal:** Cada petición representa un evento único de usuario en un momento específico. Preservar duplicados permite análisis de frecuencia de uso.
+    2.  **Rendimiento (Baja Latencia):** Se elimina la sobrecarga de realizar una lectura de verificación (`SELECT` previa) antes de la escritura (`INSERT`), garantizando una operación de persistencia **O(1)**.
+    3.  **Prioridad MVP:** Se prioriza la robustez del flujo transaccional sobre la optimización del espacio en disco (_Storage is cheap, Engineering time is expensive_).
+
 ---
 
 ## 4. DISEÑO DE ARQUITECTURA (FLUJO DE VALOR)
@@ -121,6 +131,14 @@ Con la arquitectura base estabilizada, los siguientes pasos inmediatos son:
 1.  **Stress Testing:** Pruebas de carga con payloads masivos (ej: textos > 1MB).
 2.  **Chaos Engineering:** Simulación de caída de contenedores (`docker stop cesium-engine`) para validar la resiliencia.
 3.  **Casos de Borde:** Validación de entradas vacías, caracteres especiales e inyección SQL.
+
+### 5.3. Optimización y Caching
+
+Una vez validada la carga transaccional, se planifica la implementación de una estrategia de **Deduplicación y Caché**.
+
+- **Tecnología Propuesta:** Redis.
+- **Lógica Futura:** `Check Cache -> (Hit ? Return : Predict & Save)`.
+- **Objetivo:** Reducir costos computacionales en el Engine de Python evitando re-inferencias de textos comunes.
 
 ---
 

@@ -2,7 +2,6 @@ package com.cesiumflow.sentiment.entity;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
@@ -15,15 +14,19 @@ import java.util.UUID;
 @AllArgsConstructor
 public class SentimentRecord {
 
+	/**
+	 * The unique ID of the record.
+	 * Kept as NULL during creation; PostgreSQL generates it via
+	 * 'gen_random_uuid()'.
+	 */
 	@Id
 	private UUID id;
-	@Column("original_text")
+
 	private String originalText;
 
 	private String prediction;
 
 	private Double probability;
 
-	@Column("created_at")
 	private LocalDateTime createdAt;
 }

@@ -1,0 +1,13 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+  sql:
+    init:
+      mode: always
+
+app:
+  sentiment-engine:
+    url: ${PYTHON_ENGINE_URL:http://localhost:5000}

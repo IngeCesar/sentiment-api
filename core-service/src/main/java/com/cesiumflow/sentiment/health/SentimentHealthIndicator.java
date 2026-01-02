@@ -1,5 +1,6 @@
 package com.cesiumflow.sentiment.health;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.ReactiveHealthIndicator;
 import org.springframework.stereotype.Component;
@@ -7,28 +8,41 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Component
+@RequiredArgsConstructor
 public class SentimentHealthIndicator implements ReactiveHealthIndicator {
 
-	private final WebClient webClient;
+	private static final String SERVICE_NAME = "Sentiment Engine (Python)";
+	private static final String HEALTH_ENDPOINT = "/health";
 
-	public SentimentHealthIndicator(WebClient webClient) {
-		this.webClient = webClient;
-	}
+	private final WebClient webClient;
 
 	@Override
 	public Mono<Health> health() {
 		return webClient.get()
-				.uri("/health") // O el endpoint /health que definamos en Python
+				.uri(HEALTH_ENDPOINT)
 				.retrieve()
-				.toBodilessEntity() // Solo nos importa si responde (200 OK)
-				.map(entity -> Health.up()
-						.withDetail("service", "Sentiment Engine (Python)")
-						.withDetail("status", "Reachable")
-						.build())
-				.onErrorResume(ex -> Mono.just(
-						Health.down()
-								.withDetail("service", "Sentiment Engine (Python)")
-								.withDetail("error", "Unreachable: " + ex.getMessage())
-								.build()));
+				.toBodilessEntity()
+				.map(ignore -> buildUp())
+				.onErrorResume(this::buildDown);
+	}
+
+	/**
+	 * ATOMIC HELPER: Constructs the Success Health object.
+	 */
+	private Health buildUp() {
+		return Health.up()
+				.withDetail("service", SERVICE_NAME)
+				.withDetail("status", "Reachable")
+				.build();
+	}
+
+	/**
+	 * ATOMIC HELPER: Constructs the Failure Health object.
+	 */
+	private Mono<Health> buildDown(Throwable ex) {
+		return Mono.just(Health.down()
+				.withDetail("service", SERVICE_NAME)
+				.withDetail("error", "Unreachable: " + ex.getMessage())
+				.build());
 	}
 }

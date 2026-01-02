@@ -9,11 +9,11 @@ import java.util.Map;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class ErrorResponse {
 	private int status;
 	private String message;
 	private LocalDateTime timestamp;
-	private Map<String, String> details; // To list specific field errors
+	private Map<String, String> details;
 }

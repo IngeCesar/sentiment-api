@@ -82,3 +82,14 @@ reset-docker:
     @docker ps -a --format '{{{{.Names}}}}' | grep "{{project_name}}" | xargs -r docker rm > /dev/null 2>&1 || true
     @docker network prune -f > /dev/null 2>&1
     @printf "{{clr_ready}}✨ Docker system is fresh.{{clr_reset}}\n"
+
+
+# --- TESTING ---
+
+[no-cd]
+test-int:
+    @echo "🧪 Running Integration Tests..."
+    set -a && . ./.env && set +a && \
+    ./core-service/mvnw -f core-service/pom.xml \
+           -Dtest=SentimentIntegrationTest \
+           test

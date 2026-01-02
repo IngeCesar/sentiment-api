@@ -13,7 +13,6 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_INITDB_ARGS=--auth-local=scram-sha-256 --auth-host=scram-sha-256
     healthcheck:
-      # Use pg_isready to ensure the DB is fully started before Java connects
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
       timeout: 5s
@@ -26,7 +25,7 @@ services:
   # ==========================================
   # 2. CORE SERVICE (Java Spring Boot)
   # ==========================================
-  core:
+  core-service:
     image: cesiumflow/core:latest
     container_name: cesium-core
     build:
@@ -35,8 +34,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SENTIMENT_API_URL=http://sentiment-engine:5000
-      # Injection of Secrets from .env to Java
+      - PYTHON_ENGINE_URL=http://sentiment-engine:5000
       - DB_URL=r2dbc:postgresql://db:5432/${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -44,7 +42,7 @@ services:
       sentiment-engine:
         condition: service_healthy
       db:
-        condition: service_healthy # 🚨 Java waits for the DB to be ready
+        condition: service_healthy
     restart: always
 
   # ==========================================
@@ -69,7 +67,7 @@ services:
     restart: always
 
   # ==========================================
-  # 4. FRONTEND (Nginx Static)
+  # 4. FRONTEND (Nginx Proxy)
   # ==========================================
   frontend:
     image: cesiumflow/frontend:latest
@@ -79,6 +77,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "80:80"
+    depends_on:
+      - core-service
     restart: always
 
 # ==========================================
@@ -86,4 +86,4 @@ services:
 # ==========================================
 volumes:
   maven-data:
-  postgres-data: # 🚨 Essential to keep your data after restart
+  postgres-data:

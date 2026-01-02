@@ -6,16 +6,10 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 /**
- * Reactive Repository for SentimentRecord.
- * It provides non-blocking CRUD operations out of the box.
+ * Data Access Layer for Sentiment Records.
+ * Extends ReactiveCrudRepository to inherit standard CRUD methods (save, find,
+ * delete).
  */
 @Repository
 public interface SentimentRepository extends ReactiveCrudRepository<SentimentRecord, UUID> {
-
-	// Spring Data R2DBC will automatically implement this interface.
-	// You already have:
-	// - save(SentimentRecord) -> Mono<SentimentRecord>
-	// - findById(UUID) -> Mono<SentimentRecord>
-	// - findAll() -> Flux<SentimentRecord>
-	// - deleteById(UUID) -> Mono<Void>
 }

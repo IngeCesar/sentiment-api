@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "app.sentiment-engine.url",
+      "type": "java.lang.String",
+      "description": "URL of the Python AI Engine microservice."
+    }
+  ]
+}

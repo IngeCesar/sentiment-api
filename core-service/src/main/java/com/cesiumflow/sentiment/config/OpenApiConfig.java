@@ -9,24 +9,23 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Configuration for OpenAPI (Swagger) documentation.
- * This class customizes the interactive API documentation for CesiumFlow.
+ * Customizes the interactive API documentation exposed at /swagger-ui.html.
  */
 @Configuration
 public class OpenApiConfig {
 
 	@Bean
-	public OpenAPI cesiumFlowOpenAPI() {
+	public OpenAPI customOpenAPI() {
 		return new OpenAPI()
 				.info(new Info()
 						.title("CesiumFlow - Sentiment Analysis API")
-						.description("Reactive Microservice for real-time sentiment analysis. " +
-								"Orchestrates communication between Python (AI Engine) and PostgreSQL.")
+						.description("Reactive Microservice orchestrating Python AI Engine and PostgreSQL persistence.")
 						.version("1.0.0")
 						.contact(new Contact()
 								.name("CesiumFlow Team")
-								.url("https://github.com/cesiumflow")) // Your org URL
+								.url("https://github.com/cesiumflow"))
 						.license(new License()
-								.name("Apache 2.0")
-								.url("http://springdoc.org")));
+								.name("MIT License")
+								.url("https://opensource.org/licenses/MIT")));
 	}
 }

@@ -8,10 +8,13 @@ WORKDIR /usr/share/nginx/html
 # Clean default
 RUN rm -rf ./*
 
-# Copy code
+# Copy static assets
 COPY . .
 
-# Permissions (Nginx user comes built-in)
+# COPY CUSTOM NGINX CONFIGURATION (Vital for Reverse Proxy)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Permissions
 RUN chown -R nginx:nginx /usr/share/nginx/html
 
 EXPOSE 80
