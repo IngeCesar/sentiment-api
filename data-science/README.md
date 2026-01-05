@@ -1,108 +1,119 @@
-# 🧠 API de Análisis de Sentimientos (Team 55)
+# 🧠 CesiumFlow: Inference Engine
 
-Microservicio basado en Python (FastAPI) y Scikit-Learn para analizar el sentimiento de reseñas de productos.
+> **Motor de procesamiento NLP descentralizado y servicio de inferencia de alta performance.**
 
-## 📋 Pre-requisitos
+![Python](https://img.shields.io/badge/Python-3.14.2-blue?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.127.x-009688?logo=fastapi&logoColor=white)
+![Scikit-Learn](https://img.shields.io/badge/ML-Scikit--Learn-orange?logo=scikit-learn&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Development-yellow)
 
-- **Python 3.14.2** instalado.
-- El puerto **5000** debe estar libre.
+## 🎯 Alcance del Servicio
 
-## ⚙️ Instalación y Configuración
+Este microservicio encapsula la lógica de **Inteligencia Artificial** del ecosistema CesiumFlow. Su responsabilidad única es recibir texto crudo, preprocesarlo y ejecutar inferencias sobre modelos serializados (`.joblib`), devolviendo predicciones probabilísticas al **Core-Service**.
 
-El artefacto del modelo ya está incluido en el repositorio (`models/`) y las dependencias están congeladas.
+### 🏗️ Stack Técnico (ML Ops)
 
-1.  **Navegar a la carpeta del proyecto:**
+Selección tecnológica orientada a la **reproducibilidad** y baja latencia de inferencia.
 
-    ```bash
-    cd data-science
-    ```
-
-2.  **Configurar el Entorno Virtual:**
-    Recomendamos crearlo dentro de la carpeta `ds-api`.
-
-    ```bash
-    # Crear
-    python -m venv ds-api/venv
-
-    # Activar (Windows)
-    .\ds-api\venv\Scripts\activate
-
-    # Activar (Mac/Linux)
-    source ds-api/venv/bin/activate
-    ```
-
-3.  **Instalar Dependencias (CRÍTICO):**
-    Usa este comando para asegurar compatibilidad con el modelo pre-entrenado.
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-## 🚀 Ejecución
-
-1.  Entra a la carpeta del código fuente:
-    ```bash
-    cd ds-api
-    ```
-2.  Levanta el servidor:
-    ```bash
-    python main.py
-    ```
-
-Verás el mensaje: `✅ Uvicorn running on http://0.0.0.0:5000`
+| Componente        | Tecnología    | Rol Arquitectónico                                      |
+| :---------------- | :------------ | :------------------------------------------------------ |
+| **Runtime**       | Python 3.14.2 | Entorno de ejecución optimizado con GIL improvements.   |
+| **API Framework** | FastAPI       | Exposición de endpoints asíncronos de alto rendimiento. |
+| **ASGI Server**   | Uvicorn       | Servidor de aplicaciones web ligero y rápido.           |
+| **ML Core**       | Scikit-learn  | Algoritmos de clasificación y vectorización (TF-IDF).   |
+| **Serialization** | Joblib        | Persistencia eficiente de arrays de NumPy.              |
+| **Data Standard** | Pydantic v2   | Validación estricta de esquemas de entrada/salida.      |
 
 ---
 
-## 🧪 Guía de Pruebas (Testing)
+## 📂 Estructura del Módulo
 
-Tienes dos formas de probar que la API funciona correctamente.
+El repositorio separa explícitamente el entorno de experimentación (**Laboratorio**) del código productivo (**Inferencia**).
 
-### Opción A: Swagger UI (Visual y Rápido) ⚡
-
-FastAPI genera documentación interactiva automática.
-
-1.  Abre tu navegador y entra a: **http://localhost:5000/docs**
-2.  Verás una barra verde que dice `POST /predict`. Haz clic en ella.
-3.  Haz clic en el botón **"Try it out"** (arriba a la derecha).
-4.  En el campo "Request body", escribe tu prueba:
-    ```json
-    {
-        "text": "La calidad de producto es terrible"
-    }
-    ```
-5.  Haz clic en el botón azul **"Execute"**.
-6.  Verás la respuesta en "Server response".
-
-### Opción B: Postman 🛠️
-
-Sigue esta configuración exacta para evitar errores:
-
-1.  **Method:** Selecciona `POST`.
-2.  **URL:** `http://localhost:5000/predict`
-3.  **Body:**
-    - Ve a la pestaña **Body**.
-    - Selecciona la opción **raw**.
-    - En el desplegable que dice "Text", cámbialo a **JSON**.
-4.  **Payload:** Pega el JSON de prueba:
-    ```json
-    {
-        "text": "Estoy fascinado con la compra, funciona excelente"
-    }
-    ```
-5.  Dale a **Send**. Deberías recibir un `Status: 200 OK`.
+```text
+data-science/
+├── data/               # 💾 Almacén Local (Ignorado por Git/Docker)
+│   ├── raw/            # Fuente de verdad inmutable (CSVs originales)
+│   └── processed/      # Datasets limpios listos para entrenamiento
+├── notebooks/          # 🔬 Laboratorio (Jupyter Notebooks de exploración)
+├── models/             # 🧠 Artefactos binarios (Modelos serializados .joblib)
+├── src/                # 🧪 Lógica pura de ML (Preprocesamiento y Training)
+├── ds-api/             # 🔌 Capa de transporte (Endpoints FastAPI y DTOs)
+│   └── main.py         # Punto de entrada de la aplicación
+├── requirements.txt    # 🔒 Dependencias congeladas (Pinned Versions)
+└── Dockerfile          # 🐳 Definición de infraestructura inmutable
+```
 
 ---
 
-## ❓ Solución de Problemas Frecuentes
+## ⚙️ Configuración de Entorno Local
 
-### ❌ Error: "Method Not Allowed" (405)
+Aunque recomendamos usar **Docker** (vía `just dev` en la raíz), para desarrollo de modelos o depuración profunda, puedes ejecutar el servicio nativamente.
 
-- **Causa:** Intentaste abrir `http://localhost:5000/predict` directamente en la barra de direcciones del navegador.
-- **Solución:** Los navegadores envían peticiones `GET` por defecto, pero este endpoint solo acepta `POST`. Usa Swagger o Postman como se indica arriba.
+### 1. Preparación del Entorno (Python 3.14)
+
+Recomendamos aislar las dependencias para evitar conflictos con el sistema (Cross-contamination).
+
+```bash
+# Crear entorno virtual dentro del módulo
+python -m venv venv
+
+# Activar (Windows Git Bash / PowerShell)
+source venv/Scripts/activate
+
+# Activar (Linux / Mac)
+source venv/bin/activate
+```
+
+### 2. Hidratación de Dependencias
+
+> [!IMPORTANT]
+> **Integridad del Modelo:** Es crítico instalar las versiones exactas definidas en `requirements.txt`. Versiones diferentes de `scikit-learn` pueden causar errores de deserialización (`InconsistentVersionWarning`).
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Ejecución del Servidor (Hot Reload)
+
+```bash
+# Ejecutar desde la raíz de la carpeta 'data-science'
+uvicorn ds-api.main:app --reload --port 5000
+```
+
+---
+
+## 🔌 Contrato de Interfaz (Internal API)
+
+Este servicio está diseñado para ser consumido internamente por el **Core-Service** dentro de la red Docker, no por el usuario final.
+
+| Método | Endpoint     | Descripción                        | Payload Ejemplo                  |
+| :----- | :----------- | :--------------------------------- | :------------------------------- |
+| `POST` | **/predict** | Realiza inferencia de sentimiento. | `{"text": "Excelente servicio"}` |
+| `GET`  | **/health**  | Verificación de estado (K8s).      | N/A                              |
+
+### 🧪 Verificación Rápida (Smoke Test)
+
+Una vez levantado el servicio, puedes validar la carga del modelo visitando la documentación interactiva:
+
+- **Swagger UI:** [http://localhost:5000/docs](http://localhost:5000/docs)
+- **Redoc:** [http://localhost:5000/redoc](http://localhost:5000/redoc)
+
+---
+
+## ❓ Solución de Problemas (Troubleshooting)
 
 ### ❌ Error: "ModuleNotFoundError"
 
-- **Causa:** No activaste el entorno virtual (`venv`) antes de ejecutar `python main.py`.
+- **Diagnóstico:** Intentaste ejecutar el script sin activar el entorno virtual o sin estar en la carpeta raíz correcta.
+- **Solución:** Asegúrate de ver `(venv)` en tu terminal y ejecutar `uvicorn` desde la carpeta `data-science`, no desde `ds-api`.
 
-### ❌ Error: "InconsistentVersionWarning"
+### ❌ Error: "ValueError: node array from the pickle has an incompatible dtype"
 
-- **Causa:** No instalaste las dependencias usando `requirements.txt` y tienes versiones de `scikit-learn` diferentes a las del modelo. Ejecuta `pip install -r requirements.txt`.
+- **Diagnóstico:** Incompatibilidad de versiones de Scikit-learn.
+- **Solución:** El modelo fue entrenado con una versión distinta a la que tienes instalada. Ejecuta `pip install -r requirements.txt --force-reinstall`.
+
+### ❌ Error: "Method Not Allowed" (405) en `/predict`
+
+- **Diagnóstico:** Intentaste acceder vía navegador (GET).
+- **Solución:** Este endpoint es estrictamente **POST**. Usa Swagger UI o `curl`.
