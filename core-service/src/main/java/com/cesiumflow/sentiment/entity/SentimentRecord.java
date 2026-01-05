@@ -1,11 +1,17 @@
 package com.cesiumflow.sentiment.entity;
 
 import lombok.*;
+import java.time.Instant;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
+
+/**
+ * Representa un registro de análisis en la tabla 'sentiment_records'.
+ * Utiliza Spring Data R2DBC para persistencia reactiva en PostgreSQL.
+ */
 
 @Table("sentiment_records")
 @Data
@@ -14,11 +20,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class SentimentRecord {
 
-	/**
-	 * The unique ID of the record.
-	 * Kept as NULL during creation; PostgreSQL generates it via
-	 * 'gen_random_uuid()'.
-	 */
+	// ID único generado automáticamente por PostgreSQL (gen_random_uuid())
+	// Spring detecta que es null al guardar y delega la generación a la BD.
 	@Id
 	private UUID id;
 
@@ -28,5 +31,15 @@ public class SentimentRecord {
 
 	private Double probability;
 
-	private LocalDateTime createdAt;
+	/**
+	 * Se almacena como ARRAY nativo de PostgreSQL para optimizar el rendimiento.
+	 * Evita JOINs costosos y permite una recuperación atómica de datos para el
+	 * Dashboard.
+	 */
+	private String[] keywords;
+
+	// Auditoría: Spring llena este campo automáticamente antes de persistir.
+	// Es la "Verdad Cronológica" del sistema.
+	@CreatedDate
+	private Instant createdAt;
 }

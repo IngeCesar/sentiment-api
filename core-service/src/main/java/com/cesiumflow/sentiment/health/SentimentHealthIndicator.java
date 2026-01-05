@@ -7,6 +7,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+/**
+ * Monitorea la disponibilidad del motor de IA externo.
+ * Es crucial para la observabilidad, ya que el microservicio Core depende
+ * directamente de la respuesta del motor en Python.
+ */
 @Component
 @RequiredArgsConstructor
 public class SentimentHealthIndicator implements ReactiveHealthIndicator {
@@ -16,19 +21,23 @@ public class SentimentHealthIndicator implements ReactiveHealthIndicator {
 
 	private final WebClient webClient;
 
+	/**
+	 * Ejecuta un chequeo no bloqueante hacia el motor de IA.
+	 * Se utiliza 'toBodilessEntity()' para validar la conexión mediante el código
+	 * de estado HTTP, evitando el costo innecesario de procesar un cuerpo de
+	 * respuesta.
+	 */
 	@Override
 	public Mono<Health> health() {
 		return webClient.get()
 				.uri(HEALTH_ENDPOINT)
 				.retrieve()
-				.toBodilessEntity()
+				.toBodilessEntity() // Optimización: Solo nos interesa el status 200 OK
 				.map(ignore -> buildUp())
 				.onErrorResume(this::buildDown);
 	}
 
-	/**
-	 * ATOMIC HELPER: Constructs the Success Health object.
-	 */
+	// Define el estado operativo cuando el puente hacia la IA está activo
 	private Health buildUp() {
 		return Health.up()
 				.withDetail("service", SERVICE_NAME)
@@ -37,7 +46,9 @@ public class SentimentHealthIndicator implements ReactiveHealthIndicator {
 	}
 
 	/**
-	 * ATOMIC HELPER: Constructs the Failure Health object.
+	 * Captura cualquier falla de red o timeout.
+	 * Esto permite que Actuator marque el sistema como 'OUT_OF_SERVICE'
+	 * si la dependencia crítica (IA) no responde.
 	 */
 	private Mono<Health> buildDown(Throwable ex) {
 		return Mono.just(Health.down()

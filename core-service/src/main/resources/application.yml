@@ -1,7 +1,4 @@
-# ==========================================
-# CESIUMFLOW CONFIGURATION
-# ==========================================
-
+# --- INFRAESTRUCTURA DEL SERVICIO ---
 server:
   port: 8080
 
@@ -9,7 +6,8 @@ spring:
   application:
     name: Sentiment-Core
 
-  # Reactive Database (R2DBC)
+  # Stack Reactivo (R2DBC): Maximiza el throughput mediante I/O no bloqueante.
+  # Soporta inyección dinámica para orquestación en contenedores con fallback local.
   r2dbc:
     url: ${DB_URL:r2dbc:postgresql://localhost:5432/cesium_sentiment_db}
     username: ${DB_USER:cesium_user}
@@ -17,40 +15,34 @@ spring:
 
   sql:
     init:
-      mode: always
+      mode: always # Garantiza la integridad del esquema y vistas en entornos efímeros.
 
-# ==========================================
-# CUSTOM PROPERTIES
-# ==========================================
+# --- INTEGRACIÓN: ANALYTICS ENGINE (FASTAPI) ---
 app:
   sentiment-engine:
-    # Allows overriding via Docker env var PYTHON_ENGINE_URL
-    # Default is localhost for local development outside Docker
+    # Upstream desacoplado para el motor de inferencia NLP.
+    # Justificación: Independencia del ciclo de vida y escalabilidad elástica de la IA.
     url: ${PYTHON_ENGINE_URL:http://localhost:5000}
 
-# ==========================================
-# MONITORING
-# ==========================================
+# --- OBSERVABILIDAD Y TELEMETRÍA ---
 management:
   endpoint:
     health:
+      # Telemetría de dependencias críticas (Postgres/IA) para monitoreo de salud.
       show-details: always
   endpoints:
     web:
       exposure:
         include: health
 
-# ==========================================
-# LOGGING
-# ==========================================
+# --- AUDITORÍA Y CONTRATOS API ---
 logging:
   level:
+    # Trazabilidad de operaciones R2DBC para debugging en flujos asíncronos.
     "[org.springframework.data.r2dbc]": DEBUG
 
-# ==========================================
-# OPENAPI / SWAGGER
-# ==========================================
 springdoc:
+  # Contrato OpenAPI para validación de endpoints y consumo del cliente (Frontend).
   api-docs:
     enabled: true
     path: /v3/api-docs

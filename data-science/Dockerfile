@@ -12,7 +12,6 @@ WORKDIR /app
 # 1. System Dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libgomp1 \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
@@ -20,18 +19,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# 3. Python Dependencies & NLTK Data
+# 3. Python Dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Create directory and download NLTK data to a shared location
-RUN mkdir -p /usr/local/share/nltk_data && \
-    python -m nltk.downloader -d /usr/local/share/nltk_data stopwords
-
 # 4. Security & Permissions
 RUN useradd -m -u 1001 ml-service
-# Grant permissions to user for app, venv, AND the new nltk_data folder
-RUN chown -R ml-service:ml-service /app /opt/venv /usr/local/share/nltk_data
+# Grant permissions to user for app, venv
+RUN chown -R ml-service:ml-service /app /opt/venv
 
 # Healthcheck pointing to our custom health endpoint
 HEALTHCHECK --interval=20s --timeout=5s --start-period=10s --retries=3 \
@@ -55,7 +50,6 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m -u 1001 ml-service
@@ -64,13 +58,14 @@ RUN useradd -m -u 1001 ml-service
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# --- CRITICAL: Copy NLTK Data from Builder ---
-COPY --from=builder /usr/local/share/nltk_data /usr/local/share/nltk_data
+ENV PYTHONPATH="${PYTHONPATH}:/app"
 
-COPY . .
+COPY models/ ./models/
+COPY src/ ./src/
+COPY ds-api/ ./ds-api/
 
 # Final Permissions
-RUN chown -R ml-service:ml-service /app /usr/local/share/nltk_data
+RUN chown -R ml-service:ml-service /app
 
 # Healthcheck pointing to our custom health endpoint
 HEALTHCHECK --interval=20s --timeout=5s --start-period=10s --retries=3 \

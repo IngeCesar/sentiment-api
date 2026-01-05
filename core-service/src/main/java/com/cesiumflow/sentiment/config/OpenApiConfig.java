@@ -8,18 +8,25 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Configuration for OpenAPI (Swagger) documentation.
- * Customizes the interactive API documentation exposed at /swagger-ui.html.
+ * Definición del contrato de interfaz y especificación OpenAPI.
+ * Establece el estándar de comunicación para consumidores de la capa Edge
+ * y servicios externos, garantizando la consistencia del esquema de datos.
  */
 @Configuration
 public class OpenApiConfig {
 
+	/**
+	 * Configuración del manifiesto de la API.
+	 * Centraliza la documentación técnica, políticas de licencia y
+	 * puntos de contacto del ecosistema CesiumFlow.
+	 */
 	@Bean
 	public OpenAPI customOpenAPI() {
 		return new OpenAPI()
 				.info(new Info()
 						.title("CesiumFlow - Sentiment Analysis API")
-						.description("Reactive Microservice orchestrating Python AI Engine and PostgreSQL persistence.")
+						.description("Orquestador reactivo para el procesamiento asíncrono de feedback. " +
+								"Abstrae la complejidad del motor de inferencia NLP y gestiona la persistencia relacional.")
 						.version("1.0.0")
 						.contact(new Contact()
 								.name("CesiumFlow Team")

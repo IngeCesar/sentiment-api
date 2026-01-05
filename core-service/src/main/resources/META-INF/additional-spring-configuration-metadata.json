@@ -3,7 +3,7 @@
     {
       "name": "app.sentiment-engine.url",
       "type": "java.lang.String",
-      "description": "URL of the Python AI Engine microservice."
+      "description": "URL del microservicio de IA en Python. Por defecto: http://localhost:5000"
     }
   ]
 }

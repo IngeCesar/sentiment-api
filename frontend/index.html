@@ -3,7 +3,6 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
         <meta
             name="description"
             content="AI Sentiment Analysis Tool by CesiumFlow"
@@ -11,29 +10,57 @@
         <title>Analizador de Sentimientos | CesiumFlow</title>
 
         <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
-
         <link rel="stylesheet" href="css/styles.css" />
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         <script src="js/script.js" defer></script>
     </head>
     <body>
-        <main class="container">
-            <img src="assets/logo.svg" alt="CesiumFlow Logo" class="app-logo" />
+        <div class="layout-wrapper">
+            <main class="container">
+                <img
+                    src="assets/logo.svg"
+                    alt="CesiumFlow Logo"
+                    class="app-logo"
+                />
 
-            <h1>Analizador de Sentimientos</h1>
-            <p>Ingresa la opinión del cliente para detectar emociones.</p>
+                <h1>Analizador de Sentimientos</h1>
+                <p>Ingresa la opinión del cliente para detectar emociones.</p>
 
-            <textarea
-                id="textInput"
-                placeholder="Ej: El servicio fue excelente y rápido..."
-                aria-label="Comentario del cliente"
-            ></textarea>
+                <textarea
+                    id="textInput"
+                    placeholder="Ej: El servicio fue excelente y rápido..."
+                    aria-label="Comentario del cliente"
+                ></textarea>
 
-            <button onclick="analyzeSentiment()">Analizar Sentimiento</button>
+                <button onclick="analyzeSentiment()">
+                    Analizar Sentimiento
+                </button>
 
-            <div id="result" aria-live="polite"></div>
+                <div id="result" aria-live="polite"></div>
+                <div id="keywords-container" class="keywords-box"></div>
+            </main>
 
-            <div id="keywords-container" class="keywords-box"></div>
-        </main>
+            <section class="stats-container">
+                <h2>📊 Métricas en Vivo</h2>
+
+                <div class="stat-card">
+                    <span class="stat-label">Total Analizado</span>
+                    <span id="total-counter" class="stat-value">0</span>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-box">
+                        <h3>Distribución</h3>
+                        <canvas id="sentimentChart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3>Top Palabras</h3>
+                        <canvas id="keywordsChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
     </body>
 </html>

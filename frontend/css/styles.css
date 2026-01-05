@@ -1,63 +1,56 @@
-/* 1. Font Import (Roboto Complete - All weights/italics) */
+/* 1. IMPORTACIÓN DE FUENTES */
 @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
 
-/* 2. Global Reset & Best Practices */
+/* 2. RESET GLOBAL */
 * {
-    box-sizing: border-box; /* Ensures padding doesn't increase total element width */
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
 body {
-    /* Primary font stack with safe fallbacks */
     font-family: "Roboto", "Segoe UI", Tahoma, sans-serif;
-
-    /* Gradient background */
     background: linear-gradient(135deg, #4f46e5, #9333ea);
-
-    /* Flexbox for perfect centering */
     display: flex;
     justify-content: center;
     align-items: center;
-
-    /* MOBILE FIRST: min-height ensures background covers full screen even with scroll */
     min-height: 100vh;
-
-    /* Safe padding for small mobile screens */
     padding: 20px;
-
     color: #333;
 }
 
+/* 3. WRAPPER PRINCIPAL (NUEVO) */
+.layout-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 900px; /* Más ancho para que quepan los gráficos */
+    margin: 20px;
+}
+
+/* 4. COMPONENTE ANALIZADOR (IZQUIERDA) */
 .container {
     background: white;
-
-    /* MOBILE FIRST: Take full available width by default */
     width: 100%;
-
-    /* Constraint for larger screens (Tablet/Desktop) */
-    max-width: 420px;
-
+    /* Quitamos max-width fijo aquí para que flexbox lo maneje */
     padding: 25px;
     border-radius: 16px;
     text-align: center;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-
-    /* Auto margins for horizontal centering as fallback */
-    margin: auto;
 }
 
 .app-logo {
-    height: 50px; /* Mobile base size */
-    width: auto; /* Maintain aspect ratio */
-    margin-bottom: 1rem; /* Spacing from title */
-    border-radius: 10px; /* Slight rounding for aesthetics */
+    height: 50px;
+    width: auto;
+    margin-bottom: 1rem;
+    border-radius: 10px;
 }
 
 h1 {
     color: #1f2937;
-    font-size: 1.5rem; /* Relative units for accessibility */
-    font-weight: 700; /* Bold */
+    font-size: 1.5rem;
+    font-weight: 700;
     margin-bottom: 0.5rem;
     line-height: 1.2;
 }
@@ -65,7 +58,7 @@ h1 {
 p {
     color: #6b7280;
     font-size: 0.95rem;
-    font-weight: 400; /* Regular */
+    font-weight: 400;
     margin-bottom: 1.5rem;
 }
 
@@ -78,19 +71,15 @@ textarea {
     border-radius: 10px;
     resize: none;
     font-family: inherit;
-    font-size: 1rem; /* 16px base size prevents auto-zoom on iOS */
+    font-size: 1rem;
     transition:
         border-color 0.3s,
         box-shadow 0.3s;
-
-    /* UI Reset for iOS default styles */
-    -webkit-appearance: none;
 }
 
 textarea:focus {
     outline: none;
     border-color: #4f46e5;
-    /* Accessible and aesthetic focus ring */
     box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
 }
 
@@ -98,18 +87,15 @@ button {
     background-color: #4f46e5;
     color: white;
     border: none;
-    padding: 14px 24px; /* Generous touch target area */
+    padding: 14px 24px;
     cursor: pointer;
     border-radius: 8px;
-    font-weight: 500; /* Medium */
+    font-weight: 500;
     width: 100%;
     font-size: 1rem;
     transition:
         background-color 0.3s,
         transform 0.1s;
-
-    /* Prevents blue highlight on tap (Mobile) */
-    -webkit-tap-highlight-color: transparent;
 }
 
 button:hover {
@@ -117,17 +103,22 @@ button:hover {
 }
 
 button:active {
-    transform: scale(0.98); /* Tactile press feedback */
+    transform: scale(0.98);
+}
+
+button:disabled {
+    background-color: #a5b4fc;
+    cursor: not-allowed;
 }
 
 #result {
     margin-top: 1.5rem;
     font-size: 1.1rem;
     line-height: 1.6;
-    min-height: 20px; /* Prevents layout shifts */
+    min-height: 20px;
 }
 
-/* Keyword Tags Styling */
+/* Estilos de Keywords */
 .keywords-box {
     margin-top: 1.5rem;
     display: flex;
@@ -143,23 +134,86 @@ button:active {
     border-radius: 20px;
     font-size: 0.85rem;
     font-weight: 500;
-    letter-spacing: 0.3px;
 }
 
-/* =========================================
-   MEDIA QUERIES (Desktop Adjustments)
-   ========================================= */
-@media (min-width: 600px) {
+/* 5. COMPONENTE DASHBOARD (DERECHA - NUEVO) */
+.stats-container {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.stats-container h2 {
+    color: #1f2937;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+}
+
+.stat-card {
+    background: #e0e7ff;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    display: inline-block;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #4338ca;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #4f46e5;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    width: 100%;
+}
+
+.chart-box {
+    position: relative;
+    height: 250px;
+    width: 100%;
+    background: white;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid #f3f4f6;
+}
+
+.chart-box h3 {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-bottom: 10px;
+}
+
+/* 6. RESPONSIVE (ESCRITORIO) */
+@media (min-width: 800px) {
+    .layout-wrapper {
+        flex-direction: row; /* Lado a lado */
+        align-items: flex-start;
+    }
+
     .container {
-        padding: 40px; /* Increased spacing for larger screens */
+        flex: 1; /* Ocupa 1 parte */
     }
 
-    h1 {
-        font-size: 1.8rem; /* Scaled up typography for desktop */
+    .stats-container {
+        flex: 1.5; /* Ocupa 1.5 partes (más ancho) */
     }
 
-    /* Logo grows on desktop */
-    .app-logo {
-        height: 64px;
+    .charts-grid {
+        grid-template-columns: 1fr 1fr; /* Gráficos lado a lado */
     }
 }

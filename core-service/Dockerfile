@@ -1,71 +1,59 @@
-# =========================================================
-# STAGE 1: BUILDER & DEVELOPMENT
-# =========================================================
+# --- STAGE: BUILD ENVIRONMENT (JDK) ---
+# Entorno aislado para la generación de artefactos reproducibles.
 FROM maven:3.9-eclipse-temurin-17 AS builder
 
-# 1. Optimization & Args
+# Configuración de runtime para compilación optimizada en contenedores.
 ARG DEBIAN_FRONTEND=noninteractive
 ENV MAVEN_OPTS="-Xmx512m -XX:+UseContainerSupport"
 
-# 2. System Dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. Security: Create non-root user (Same as before)
+# Principio de menor privilegio: Restricción del proceso a un usuario no-root.
 RUN useradd -m -u 1001 core-service
 
 WORKDIR /app
 
-# 4. Caching Dependencies
+# Estrategia de cacheo de capas: Sincronización de dependencias previa al escaneo de fuentes.
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
-# 5. Copy Source Code
 COPY src ./src
 
-# 6. Permissions for Dev
 RUN chown -R core-service:core-service /app
 
-# 7. Healthcheck pointing to Spring Boot Actuator
+# Monitoreo de disponibilidad mediante el endpoint de salud de Actuator.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
   CMD curl --fail http://localhost:8080/actuator/health || exit 1
 
-# 8. Set User & Port
 USER core-service
 EXPOSE 8080
 
-# 9. Development Command (Running with Maven)
+# Entrypoint dinámico para acelerar el ciclo de desarrollo (hot-reload).
 CMD ["mvn", "spring-boot:run"]
 
-# 10. Build Artifact (Runs as root temporarily to write to target, then switches back)
-# Note: We switch to root just to package, avoiding permission issues in some setups
+# Generación del artefacto productivo omitiendo validaciones unitarias.
 USER root
 RUN mvn clean package -DskipTests
 
-# =========================================================
-# STAGE 2: PRODUCTION
-# =========================================================
-# We use a lightweight JRE image for the final artifact
+# --- STAGE: RUNTIME ENVIRONMENT (JRE) ---
+# Imagen mínima para reducción de la superficie de ataque y optimización de despliegue.
 FROM eclipse-temurin:17-jre-jammy AS production
 
 WORKDIR /app
 
-# Create non-root user for production
 RUN useradd -m -u 1001 core-service
 
-# Install curl for Healthcheck
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy JAR from builder
+# Transferencia de artefacto: Exclusión de código fuente y herramientas de build.
 COPY --from=builder /app/target/*.jar app.jar
 
-# Permissions
 RUN chown core-service:core-service app.jar
 
-# Production Healthcheck pointing to Spring Boot Actuator
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
   CMD curl --fail http://localhost:8080/actuator/health || exit 1
 

@@ -1,46 +1,45 @@
 services:
-  # ==========================================
-  # 1. CORE SERVICE (Development Overrides)
-  # ==========================================
+  # --- CORE: DESARROLLO AGIL (SPRING BOOT) ---
   core-service:
     image: cesiumflow/core:dev
     build:
       target: builder
     environment:
+      # Habilita el reinicio automático del contexto ante cambios en el classpath.
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
-      - DB_URL=r2dbc:postgresql://db:5432/${DB_NAME}
+      - DB_URL=r2dbc:postgresql://sentiment-db:5432/${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
     volumes:
+      # Mapeo de código fuente para sincronización inmediata (Hot-Reload).
       - ./core-service:/app
+      # Persistencia de dependencias para optimizar tiempos de compilación.
       - maven-data:/root/.m2
     command: mvn spring-boot:run
 
-  # ==========================================
-  # 2. DATABASE (Development Persistence)
-  # ==========================================
-  db:
+  # --- PERSISTENCIA DE DESARROLLO ---
+  sentiment-db:
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
-  # ==========================================
-  # 3. SENTIMENT ENGINE
-  # ==========================================
+  # --- MOTOR IA: ITERACIÓN RÁPIDA (FASTAPI) ---
   sentiment-engine:
     image: cesiumflow/engine:dev
     build:
       target: builder
+    environment:
+      - PYTHONPATH=/app
     volumes:
+      # Sincronización del workspace de Data Science.
       - ./data-science:/app
-    command: uvicorn ds-api.main:app --host 0.0.0.0 --port 5000 --reload
+    # Ejecución con auto-reload para reflejar cambios en lógica NLP sin reiniciar el contenedor.
+    command: uvicorn ds-api.main:app --host 0.0.0.0 --port 5000 --reload --reload-dir src --reload-dir ds-api
 
-  # ==========================================
-  # 4. FRONTEND (Hot Reload + Config)
-  # ==========================================
+  # --- FRONTEND: ACTUALIZACIÓN EN TIEMPO REAL ---
   frontend:
     image: cesiumflow/frontend:dev
     volumes:
-      # Hot Reload for HTML/JS/CSS
+      # Mapeo de assets estáticos para previsualización inmediata en el navegador.
       - ./frontend:/usr/share/nginx/html
       - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro

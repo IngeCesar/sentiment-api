@@ -1,95 +1,66 @@
 # ==============================================================================
-# CESIUMFLOW PROJECT MANAGEMENT - SQUAD 55
+# CESIUMFLOW ORCHESTRATION - SQUAD 55
+# Estandarización de flujos operativos para garantizar paridad de entornos.
 # ==============================================================================
 project_name := "cesiumflow"
 compose_base := "docker-compose.yml"
+compose_dev  := "-f docker-compose.yml -f docker-compose.override.yml"
 
-# UI Colors
+# UI: Trazabilidad visual en terminal
 clr_ready := '\033[0;32m'
 clr_info  := '\033[0;34m'
 clr_warn  := '\033[0;33m'
 clr_reset := '\033[0m'
 
-# --- CORE ---
+# --- GESTIÓN DE CICLO DE VIDA ---
 
-# Show this help menu with all available commands
 [no-cd]
 help:
-    @printf "{{clr_info}}Available commands for {{project_name}}:{{clr_reset}}\n"
+    @printf "{{clr_info}}Manifiesto de automatización para {{project_name}}:{{clr_reset}}\n"
     @just --list --list-heading ""
 
-# --- DEVELOPMENT ENVIRONMENT (Ports: 80, 8080, 5000) ---
-
-# Start development environment with Hot Reload enabled
 [no-cd]
 dev:
-    @printf "{{clr_info}}🚀 Starting DEVELOPMENT environment...{{clr_reset}}\n"
-    @printf "{{clr_info}}Web: http://localhost:80 | API: http://localhost:8080 | Engine: http://localhost:5000{{clr_reset}}\n"
-    @docker compose -p {{project_name}}-dev up -d --build
+    @printf "{{clr_info}}🚀 Inicializando entorno de DESARROLLO (Modo Override)...{{clr_reset}}\n"
+    # Orquestación con sincronización de volúmenes para optimizar el ciclo de feedback.
+    @docker compose {{compose_dev}} -p {{project_name}}-dev up -d --build
 
-# Stop and remove all development containers
 [no-cd]
 down:
-    @printf "{{clr_warn}}🛑 Stopping DEVELOPMENT containers...{{clr_reset}}\n"
-    @docker compose -p {{project_name}}-dev down
+    @printf "{{clr_warn}}🛑 Cierre de servicios de desarrollo...{{clr_reset}}\n"
+    @docker compose {{compose_dev}} -p {{project_name}}-dev down
 
-# Show status of running development containers
-[no-cd]
-ps:
-    @printf "{{clr_info}}Container Status - DEVELOPMENT:{{clr_reset}}\n"
-    @docker compose -p {{project_name}}-dev ps
-
-# Deep clean: Remove dev containers, volumes, and local images
 [no-cd]
 clean:
-    @printf "{{clr_warn}}🧹 Performing deep clean (Dev)...{{clr_reset}}\n"
-    @docker compose -p {{project_name}}-dev down --rmi local -v --remove-orphans
-    @printf "{{clr_ready}}Cleanup complete.{{clr_reset}}\n"
+    @printf "{{clr_warn}}🧹 Purga de infraestructura (Imágenes locales + Volúmenes)...{{clr_reset}}\n"
+    # Garantiza un estado de persistencia 'limpio' al eliminar volúmenes asociados.
+    @docker compose {{compose_dev}} -p {{project_name}}-dev down --rmi local -v --remove-orphans
+    @printf "{{clr_ready}}✨ Infraestructura y base de datos saneadas.{{clr_reset}}\n"
 
-# --- PRODUCTION ENVIRONMENT (Ports: 80, 8080, 5000) ---
+# --- TELEMETRÍA Y RECUPERACIÓN ---
 
-# Start production-ready environment (optimized images)
-[no-cd]
-prod:
-    @printf "{{clr_ready}}🌐 Starting PRODUCTION environment...{{clr_reset}}\n"
-    @printf "{{clr_ready}}Web: http://localhost | API: http://localhost:8080 | Engine: http://localhost:5000{{clr_ready}}\n"
-    @docker compose -f {{compose_base}} -p {{project_name}}-prod up -d --build
-
-# Stop and remove all production containers
-[no-cd]
-down-prod:
-    @printf "{{clr_warn}}🛑 Stopping PRODUCTION containers...{{clr_reset}}\n"
-    @docker compose -f {{compose_base}} -p {{project_name}}-prod down
-
-# Show status of running production containers
-[no-cd]
-ps-prod:
-    @printf "{{clr_ready}}Container Status - PRODUCTION:{{clr_reset}}\n"
-    @docker compose -f {{compose_base}} -p {{project_name}}-prod ps
-
-# --- UTILITIES ---
-
-# Follow real-time logs from development containers
 [no-cd]
 logs:
     @docker compose -p {{project_name}}-dev logs -f
 
-# Emergency: Hard reset all Docker resources related to this project
 [no-cd]
 reset-docker:
-    @printf "{{clr_warn}}🔥 DANGER: Hard resetting all {{project_name}} resources...{{clr_reset}}\n"
-    @docker ps -a --format '{{{{.Names}}}}' | grep "{{project_name}}" | xargs -r docker stop > /dev/null 2>&1 || true
-    @docker ps -a --format '{{{{.Names}}}}' | grep "{{project_name}}" | xargs -r docker rm > /dev/null 2>&1 || true
+    @printf "{{clr_warn}}🔥 HARD RESET: Depuración total de recursos {{project_name}}...{{clr_reset}}\n"
+    # Estrategia de remediación ante colisiones de red o estados inconsistentes de Docker.
+    @docker ps -a --format '{{{{.Names}}}}' | grep "cesium-" | xargs -r docker stop > /dev/null 2>&1 || true
+    @docker ps -a --format '{{{{.Names}}}}' | grep "cesium-" | xargs -r docker rm > /dev/null 2>&1 || true
+    @docker volume ls -q | grep "{{project_name}}" | xargs -r docker volume rm > /dev/null 2>&1 || true
     @docker network prune -f > /dev/null 2>&1
-    @printf "{{clr_ready}}✨ Docker system is fresh.{{clr_reset}}\n"
+    @printf "{{clr_ready}}✨ Entorno de ejecución purificado.{{clr_reset}}\n"
 
-
-# --- TESTING ---
+# --- CALIDAD Y VALIDACIÓN ---
 
 [no-cd]
 test-int:
-    @echo "🧪 Running Integration Tests..."
+    @echo "🧪 Ejecutando suite de Integración..."
+    # Verificación de pre-requisitos: Asegura la integridad del contrato de entorno (.env).
+    @if [ ! -f .env ]; then echo "❌ Error crítico: Configuración (.env) inexistente"; exit 1; fi
     set -a && . ./.env && set +a && \
     ./core-service/mvnw -f core-service/pom.xml \
-           -Dtest=SentimentIntegrationTest \
-           test
+            -Dtest=SentimentIntegrationTest \
+            test

@@ -1,7 +1,8 @@
 # http://editorconfig.org
 root = true
 
-# Configuración base para todos los archivos
+# --- CONFIGURACIÓN GLOBAL DE ESTILO ---
+# Garantiza la paridad de formato entre distintos IDEs (IntelliJ, VS Code, Eclipse).
 [*]
 indent_style = space
 indent_size = 4
@@ -10,10 +11,12 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-# Archivos web (JSON, YAML, XML) suelen usar 2 espacios
+# --- SERIALIZACIÓN Y CONFIGURACIÓN (WEB) ---
+# Estándar de 2 espacios para mejorar la legibilidad en estructuras jerárquicas.
 [*.{json,yaml,yml,xml}]
 indent_size = 2
 
-# Markdown (a veces necesita espacios al final para saltos de línea, pero lo estandarizamos)
+# --- DOCUMENTACIÓN (MARKDOWN) ---
+# Se preservan espacios al final para compatibilidad con saltos de línea sintácticos.
 [*.md]
 trim_trailing_whitespace = false

@@ -1,12 +1,9 @@
-# ========================
-# 1. GENERAL / OS / IDEs
-# ========================
-# OS specific files
+# --- INFRAESTRUCTURA DE DESARROLLO (OS/IDE) ---
+# Eliminación de metadatos locales para garantizar la neutralidad del repositorio.
 .DS_Store
 Thumbs.db
 Desktop.ini
 
-# IDE Configurations (IntelliJ, VS Code, Eclipse)
 .idea/
 .vscode/
 *.swp
@@ -15,71 +12,47 @@ Desktop.ini
 .project
 .settings/
 
-# General Logs
-*.log
-
-# ========================
-# 2. BACKEND (JAVA / SPRING BOOT)
-# ========================
-# Build output (Important: Do not track compiled binaries)
+# --- BACKEND CORE (JAVA/MAVEN) ---
+# Se excluyen artefactos de construcción para forzar compilaciones limpias en CI/CD.
 target/
-
-# Java binaries and packages
 *.class
 *.jar
 *.war
 *.nar
 *.ear
-*.zip
-*.tar.gz
-*.rar
 
-# Maven wrapper (Optional: ignored if you rely solely on Docker)
-# .mvn/
-# mvnw
-# mvnw.cmd
-
-# ========================
-# 3. DATA SCIENCE (PYTHON)
-# ========================
-# Python Bytecode
+# --- ENGINE (PYTHON/NLP) ---
+# Prevención de persistencia de bytecode y entornos virtuales aislados.
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-# Virtual Environments
 venv/
 .venv/
 env/
 ds-api/venv/
-
-# Notebook checkpoints
 .ipynb_checkpoints/
 
-# ========================
-# 4. DATA & MODELS
-# ========================
-# Ignore raw/large datasets
+# --- GESTIÓN DE DATA & MODELOS ---
+# Política de exclusión de datasets masivos. 
+# Se preserva la estructura de directorios mediante .gitkeep (Entornos efímeros).
 data-science/data/raw/*
 data-science/data/processed/*
 !data-science/data/raw/.gitkeep
 !data-science/data/processed/.gitkeep
 
-# Models
-# NOTE: .joblib is allowed as per requirements (lightweight model)
-# *.joblib  <-- Commented out to allow upload
+# Serialización de modelos: Se permiten archivos .joblib por requisitos de ligereza.
+# Exclusión de formatos pesados (Deep Learning) para optimizar el almacenamiento.
 *.h5
 *.pt
 *.onnx
 
-# ========================
-# 5. DOCKER & SECURITY
-# ========================
-# Environment variables with secrets
+# --- SEGURIDAD Y PERSISTENCIA ---
+# Hardening: Prohibición estricta de trazabilidad de secretos y variables de entorno.
 .env
 .env.local
 .env.production
 
-# Local Volumes
+# Persistencia local de contenedores (Base de Datos).
 postgres-data/
+*.log

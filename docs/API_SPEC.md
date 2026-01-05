@@ -1,114 +1,137 @@
-# 📜 API Interface Contract (API Specification) - Squad 55
+# 📜 Especificación de Contrato API - CesiumFlow (Squad 55)
 
-| Metadata         | Details                                               |
-| :--------------- | :---------------------------------------------------- |
-| **Version**      | **1.1.0-dev**                                         |
-| **Status**       | 🚧 **In Development / Pending Review**                |
-| **Architecture** | **Middleware Pattern** (Java Gateway ↔ Python Engine) |
-| **Teams**        | Data Science (Python) ↔ Back-End (Java)               |
+Esta especificación define el estándar de comunicación técnica entre los componentes del ecosistema **CesiumFlow**, asegurando la paridad entre el Middleware (Java) y el Motor de Inferencia (Python).
 
-## 🧠 Architectural Flow
-
-This diagram represents the "Happy Path" data flow. Note how **Java acts as a Middleware**, sanitizing input before it reaches the core inference engine.
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant User as 👤 User / Frontend
-    participant Java as ☕ Java Middleware (Gateway)
-    participant Python as 🐍 Python Engine (Internal)
-
-    Note over Java: Port 8080 (Public)
-    Note over Python: Port 5000 (Internal)
-
-    User->>Java: POST /api/v1/sentiment
-    Note over Java: 1. Validation (@Valid)<br/>2. DTO Mapping
-    Java->>Python: POST /predict
-    Note over Python: 1. NLTK Processing<br/>2. TF-IDF Inference
-    Python-->>Java: Raw Prediction JSON
-    Note over Java: 1. Error Handling<br/>2. Response Formatting
-    Java-->>User: Final JSON (200 OK)
-```
+| Metadato           | Detalle                                               |
+| :----------------- | :---------------------------------------------------- |
+| **Arquitectura**   | Middleware Reactivo (Core-Service ↔ Sentiment-Engine) |
+| **Orquestación**   | Docker Compose (Health-Check Aware)                   |
+| **Puerto Público** | `8080` (Java Core)                                    |
+| **Puerto Privado** | `5000` (Python Engine)                                |
+| **Persistencia**   | PostgreSQL (R2DBC)                                    |
 
 ---
 
-## 🎯 OBJECTIVE
+## 🧠 1. Flujo de Arquitectura y Valor
 
-This document defines the strict communication rules and business logic between:
+El sistema opera bajo el patrón de **Pasarela Segura (Gateway)**. El Core-Service orquestra la validación, la llamada asíncrona a la IA y la persistencia en base de datos.
 
-1.  **Java Middleware (Public Layer):** Handles traffic, validation, security, and versioning.
-2.  **Python Engine (Private Layer):** Dedicated exclusively to Machine Learning inference tasks.
+### Puertos y Visibilidad:
+
+-   **Core-Service (8080):** Único punto de entrada público. Gestiona seguridad y Swagger.
+-   **Sentiment-Engine (5000):** Red interna de Docker. Dedicado exclusivamente a inferencia NLP.
+-   **Postgres (5432):** Almacenamiento de auditoría (Append-only).
 
 ---
 
-## 🚀 Part 1: Public API (Java Middleware)
+## 🚀 2. Contrato de API Pública (REST)
 
-The interface consumed by the Frontend. It acts as the "Bouncer," ensuring no malformed data reaches the internal engine.
+### Recurso: Análisis de Sentimiento
 
-### Main Resource: Sentiment Analysis
+-   **Endpoint:** `POST /api/v1/sentiment`
+-   **Content-Type:** `application/json`
 
-- **URL:** `http://localhost:8080/api/v1/sentiment`
-- **Method:** `POST`
-- **Content-Type:** `application/json`
+#### 📥 Estructura de Entrada (`SentimentRequest`)
 
-### 📥 Request Example (Input)
+Validado mediante **Jakarta Bean Validation** en el Middleware.
+
+| Campo  | Tipo     | Req. | Validación                  | Descripción                   |
+| :----- | :------- | :--- | :-------------------------- | :---------------------------- |
+| `text` | `String` | Sí   | `@NotBlank`, `3-5000 chars` | Texto original para procesar. |
+
+**Ejemplo de Petición:**
 
 ```json
 {
-    "text": "The service was excellent and arrived very fast."
+    "text": "El equipo del Squad 55 ha logrado una integración excepcional."
 }
 ```
 
-**Validation Rules (Java Bean Validation):**
+### 📤 Estructura de Respuesta (`SentimentResponse`)
 
-1.  `text`: **@NotBlank** (Must not be null or empty).
-2.  `text`: **@Size(min=3, max=5000)** (Length constraints).
-3.  **Encoding:** UTF-8 required (Must support special characters like `ñ`, `ü`).
+Payload enriquecido con metadatos de persistencia y trazabilidad.
 
-### 📤 Response Example (200 OK)
+| Campo             | Tipo     | Origen        | Descripción                                                                                                                                              |
+| :---------------- | :------- | :------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`id`**          | `UUID`   | **DB**        | Identificador único generado nativamente en Postgres (**Null** si hay error de conexión).                                                                |
+| **`prediction`**  | `String` | **IA**        | Etiqueta del modelo: `Positivo`, `Negativo`, `Neutro`.                                                                                                   |
+| **`probability`** | `Double` | **IA**        | Confianza del modelo (0.00 a 1.00).                                                                                                                      |
+| **`keywords`**    | `List`   | **IA**        | Palabras clave relevantes extraídas.                                                                                                                     |
+| **`timestamp`**   | `String` | **Core (DB)** | Fecha ISO-8601 UTC (`yyyy-MM-ddTHH:mm:ssZ`). **Nota:** Se ignora el tiempo del motor de IA para garantizar consistencia cronológica (`Source of Truth`). |
+
+**Ejemplo de Respuesta (JSON):**
 
 ```json
 {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
     "prediction": "Positivo",
-    "probability": 0.92,
+    "probability": 0.98,
     "keywords": ["excelente", "rápido", "servicio"],
-    "timestamp": "2025-12-29T10:00:00Z"
+    "timestamp": "2026-01-05T15:30:00Z"
 }
 ```
 
-**Data Dictionary:**
-| Field | Type | Description |
-| :--- | :--- | :--- |
-| `prediction` | `String` | Model label: `"Positivo"`, `"Negativo"`, `"Neutro"`. |
-| `probability` | `Float` | Model confidence score (0.00 to 1.00). |
-| `keywords` | `List<String>` | Tokens filtered by NLTK + Business Blacklist. |
-| `timestamp` | `String` | ISO 8601 timestamp of the processing time. |
+## 🔌 3. Comunicación Interna (Core ↔ Engine)
+
+Esta interfaz es **privada** y exclusiva para la comunicación entre contenedores dentro de la red de Docker. El usuario final no tiene acceso directo a estos recursos.
+
+### Recurso: Inferencia NLP
+
+-   **Host Interno:** `http://sentiment-engine:5000`
+-   **Endpoint:** `/predict`
+-   **Método:** `POST`
+
+#### 📥 Payload Interno (Java a Python)
+
+El Core-Service transforma la petición pública al formato estricto que espera el motor `FastAPI`.
+
+| Campo                | Tipo      | Valor por defecto | Descripción                               |
+| :------------------- | :-------- | :---------------- | :---------------------------------------- |
+| **`text`**           | `String`  | (Obligatorio)     | Texto sanitizado proveniente del usuario. |
+| **`top_n_keywords`** | `Integer` | `5`               | Cantidad de palabras clave a extraer.     |
+
+**Ejemplo de JSON Interno:**
+
+```json
+{
+    "text": "El servicio fue excelente.",
+    "top_n_keywords": 5
+}
+```
 
 ---
 
-### ⚠️ Public Error Handling
+## 🩺 4. Protocolos de Salud (Health Checks)
 
-Standard HTTP codes returned to the user when business rules are violated.
+Endpoints utilizados por **Docker Compose** para la orquestación y auto-recuperación (Self-Healing).
 
-#### 🔴 Error 400: Bad Request
+| Componente           | Endpoint           | Tipo            | Propósito                                          |
+| :------------------- | :----------------- | :-------------- | :------------------------------------------------- |
+| **Core-Service**     | `/actuator/health` | Spring Actuator | Monitor de estado JVM, Disco y Conexión R2DBC.     |
+| **Sentiment-Engine** | `/health`          | Custom Endpoint | Verifica carga de modelos (`.joblib`) y librerías. |
+| **PostgreSQL**       | `pg_isready`       | CLI Command     | Disponibilidad del socket de base de datos.        |
 
-Triggered automatically by the Middleware when validation fails (e.g., text too short).
+## ⚠️ 5. Gestión de Errores y Resiliencia
+
+El sistema implementa un manejo centralizado de excepciones (**Global Exception Handling**) para garantizar respuestas JSON consistentes y seguras, evitando exponer "Stack Traces" de Java al cliente final.
+
+### Tabla de Códigos de Estado
+
+| Código HTTP | Estado           | Causa Probable                              | Acción del Cliente                                  |
+| :---------- | :--------------- | :------------------------------------------ | :-------------------------------------------------- |
+| **200 OK**  | `Success`        | Operación exitosa o **Fallback de IA**.     | Consumir el JSON y verificar el campo `prediction`. |
+| **400**     | `Bad Request`    | Violación de reglas (`@NotBlank`, `@Size`). | Corregir la longitud del texto y reintentar.        |
+| **500**     | `Internal Error` | Fallo de conexión con DB o error crítico.   | Reportar al equipo de SRE.                          |
+
+### 🛡️ Estrategia de Fallback (Circuit Breaker Pattern)
+
+Si el **Sentiment-Engine** (Python) no responde (Timeout o contenedor `DOWN`), el **Core-Service** no devuelve un error 500. En su lugar, captura la excepción y retorna una **respuesta degradada controlada**.
+
+**Payload de Contingencia (Ejemplo Real):**
 
 ```json
 {
-    "timestamp": "2025-12-29T10:05:00Z",
-    "status": 400,
-    "error": "Bad Request",
-    "path": "/api/v1/sentiment"
-}
-```
-
-#### 🔥 Error 500: Internal Service Failure
-
-Triggered if the internal Python engine is unreachable. The Middleware catches the exception to prevent a system crash.
-
-```json
-{
+    "id": null,
     "prediction": "CONNECTION_ERROR",
     "probability": 0.0,
     "keywords": [],
@@ -116,49 +139,41 @@ Triggered if the internal Python engine is unreachable. The Middleware catches t
 }
 ```
 
----
+> **Justificación Técnica:** Este diseño prioriza la disponibilidad del sistema. Permite que el Frontend detecte el estado `CONNECTION_ERROR` y sepa que la solicitud **no fue persistida** (`id: null` y `timestamp: null`), mostrando un mensaje informativo al usuario sin romper la interfaz.
 
-## 🔌 Part 2: Internal API (Python Engine)
+## 📚 6. Exploración y Pruebas (Developer Experience)
 
-This API is **private**. External users cannot access port `5000` directly.
+CesiumFlow prioriza la **Documentación Viva**. Recomendamos utilizar las interfaces gráficas generadas automáticamente para explorar y probar los contratos de manera interactiva.
 
-### Internal Resource: Inference
+### A. Interfaces Gráficas (Swagger UI)
 
-- **Internal Service:** `http://sentiment-engine:5000`
-- **Path:** `/predict` (MLOps Standard)
-- **Method:** `POST`
+Interactúe visualmente con los endpoints, esquemas y validaciones sin escribir código.
 
-### 📥 Internal Request (Java → Python)
+| Componente             | URL de Acceso                           | Descripción                                                                |
+| :--------------------- | :-------------------------------------- | :------------------------------------------------------------------------- |
+| **Core API (Pública)** | `http://localhost:8080/swagger-ui.html` | Interfaz principal para consumidores. Incluye esquemas DTO y "Try it out". |
+| **Sentiment Engine**   | `http://localhost:5000/docs`            | (Solo Dev) Interfaz nativa de FastAPI para depuración aislada del modelo.  |
 
-The Java Middleware forwards the sanitized text.
+### B. Acceso por Terminal (Quick CLI)
 
-```json
-{
-    "text": "El servicio fue excelente y llegó muy rápido."
-}
-```
+Para verificaciones rápidas de conectividad o integración en scripts de automatización, puede utilizar el estándar `curl`.
 
-### 📤 Internal Response (Python → Java)
-
-The Python Engine returns raw calculation data.
-
-```json
-{
-    "prediction": "Positivo",
-    "probability": 0.92341,
-    "keywords": ["excelente", "rápido"],
-    "timestamp": "..."
-}
+```bash
+# Test de Integración (Happy Path)
+curl -X POST "http://localhost:8080/api/v1/sentiment" \
+     -H "Content-Type: application/json" \
+     -d '{"text": "La documentación viva facilita enormemente la integración."}'
 ```
 
 ---
 
-## 🩺 DevOps & Health Checks
+## 📅 Historial de Versiones (Changelog)
 
-Endpoints designed for Container Orchestration (Docker) and Integration Testing.
+Registro de la evolución arquitectónica del producto.
 
-| Component  | Method | Endpoint               | Type            | Purpose                                             |
-| :--------- | :----- | :--------------------- | :-------------- | :-------------------------------------------------- |
-| **Java**   | `GET`  | `/`                    | **Liveness**    | Confirms the Middleware container is running.       |
-| **Java**   | `GET`  | `/api/v1/test?text=ok` | **Integration** | Tests the full pipeline (Java ↔ Python connection). |
-| **Python** | `GET`  | `/`                    | **Liveness**    | Confirms FastAPI loaded the NLTK data and Model.    |
+| Versión   | Autor    | Cambios Relevantes                                                                      |
+| :-------- | :------- | :-------------------------------------------------------------------------------------- |
+| **1.0.0** | Squad 55 | Definición inicial de arquitectura monolítica y scripts básicos.                        |
+| **1.1.0** | Squad 55 | Desacoplamiento de servicios: Separación en contenedores Docker (Java/Python).          |
+| **1.2.0** | Squad 55 | Migración a Stack Reactivo (WebFlux) e implementación de UUIDs nativos.                 |
+| **1.2.1** | Squad 55 | **Versión Actual:** Inclusión de Health Checks, Resiliencia y Manejo de Errores Global. |
