@@ -1,0 +1,31 @@
+# Dependencias y Caché
+node_modules
+.npm
+.pnpm-store
+
+# Build Output
+dist
+coverage
+build
+
+# Seguridad y Secretos
+.env
+.env.*
+*.pem
+*.key
+
+# Git
+.git
+.gitignore
+
+# IDE y Sistema Operativo
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+*.log
+
+# Docker metadata (opcional, para evitar copiarlo dentro de sí mismo)
+Dockerfile
+docker-compose*.yml
+README.md

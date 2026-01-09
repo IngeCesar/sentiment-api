@@ -1,0 +1,53 @@
+# --- INFRAESTRUCTURA DEL SERVICIO ---
+server:
+  port: 8080
+
+spring:
+  application:
+    name: Sentiment-Core
+
+  # Stack Reactivo (R2DBC): Maximiza el throughput mediante I/O no bloqueante.
+  # Soporta inyección dinámica para orquestación en contenedores con fallback local.
+  r2dbc:
+    url: ${DB_URL:r2dbc:postgresql://localhost:5432/cesium_sentiment_db}
+    username: ${DB_USER:cesium_user}
+    password: ${DB_PASSWORD:cesium_password}
+
+  sql:
+    init:
+      mode: always # Garantiza la integridad del esquema y vistas en entornos efímeros.
+
+# --- INTEGRACIÓN: ANALYTICS ENGINE (FASTAPI) ---
+app:
+  sentiment-engine:
+    # Upstream desacoplado para el motor de inferencia NLP.
+    # Justificación: Independencia del ciclo de vida y escalabilidad elástica de la IA.
+    url: ${PYTHON_ENGINE_URL:http://localhost:5000}
+
+# --- OBSERVABILIDAD Y TELEMETRÍA ---
+management:
+  endpoint:
+    health:
+      # Telemetría de dependencias críticas (Postgres/IA) para monitoreo de salud.
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+# --- AUDITORÍA Y CONTRATOS API ---
+logging:
+  level:
+    # Trazabilidad de operaciones R2DBC para debugging en flujos asíncronos.
+    "[org.springframework.data.r2dbc]": DEBUG
+
+springdoc:
+  # Contrato OpenAPI para validación de endpoints y consumo del cliente (Frontend).
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    use-root-path: true
+  show-actuator: true

@@ -1,0 +1,79 @@
+services:
+  # --- CORE: DESARROLLO AGIL (SPRING BOOT) ---
+  core-service:
+    image: cesiumflow/core:dev
+    build:
+      target: builder
+    environment:
+      # Habilita el reinicio automático del contexto ante cambios en el classpath.
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+      - DB_URL=r2dbc:postgresql://sentiment-db:5432/${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      # Mapeo de código fuente para sincronización inmediata (Hot-Reload).
+      - ./core-service:/app
+      # Persistencia de dependencias para optimizar tiempos de compilación.
+      - maven-data:/root/.m2
+    command: mvn spring-boot:run
+
+  # --- PERSISTENCIA DE DESARROLLO ---
+  sentiment-db:
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  # --- MOTOR IA: ITERACIÓN RÁPIDA (FASTAPI) ---
+  sentiment-engine:
+    image: cesiumflow/engine:dev
+    build:
+      target: builder
+    environment:
+      - PYTHONPATH=/app
+    volumes:
+      # Sincronización del workspace de Data Science.
+      - ./data-science:/app
+    # Ejecución con auto-reload para reflejar cambios en lógica NLP sin reiniciar el contenedor.
+    command: uvicorn ds-api.main:app --host 0.0.0.0 --port 5000 --reload --reload-dir src --reload-dir ds-api
+
+  # --- FRONTEND: ENTORNO DE DESARROLLO (VITE) ---
+  frontend:
+    # Estrategia de Build: Apunta explícitamente a la etapa 'dev' del Dockerfile multi-etapa.
+    # Esto evita construir la capa de producción (Nginx) y mantiene el contenedor en entorno Node.js.
+    build:
+      context: ./frontend
+      target: dev
+
+    image: cesiumflow/frontend:dev
+    container_name: cesium-frontend-dev
+
+    # Seguridad y Permisos: Ejecución bajo usuario no-root 'node' (UID 1000).
+    # Previene conflictos de propiedad de archivos (root vs user) en volúmenes montados en Linux.
+    user: "node"
+
+    working_dir: /app
+
+    environment:
+      - NODE_ENV=development
+      # Configuración de ruta: Redirige archivos de caché y configuración al directorio de trabajo
+      # para garantizar permisos de escritura sin privilegios de root.
+      - HOME=/app
+
+    ports:
+      # Exposición del puerto de desarrollo de Vite (Hot Reload).
+      - "5173:5173"
+
+    volumes:
+      # Sincronización bidireccional: Habilita Hot Module Replacement (HMR) reflejando cambios locales.
+      - ./frontend:/app
+      # Aislamiento de Dependencias: Volumen anónimo que protege 'node_modules' del contenedor
+      # evitando conflictos con binarios locales o carpetas vacías del host.
+      - /app/node_modules
+
+    # Ciclo de Arranque:
+    # 1. Instala dependencias para asegurar consistencia con package.json.
+    # 2. Ejecuta Vite con binding a 0.0.0.0 (--host) para permitir tráfico externo a través de Docker.
+    command: sh -c "npm install && npm run dev -- --host"
+
+    depends_on:
+      - core-service

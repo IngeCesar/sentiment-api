@@ -1,0 +1,30 @@
+# -- Python & Compilación --
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# -- Entornos Virtuales --
+# Crítico: Evita copiar librerías locales al contenedor
+venv/
+.venv/
+env/
+ds-api/venv/
+
+# -- Data Science & Notebooks --
+.ipynb_checkpoints/
+# Ignoramos la data pesada, pero mantenemos la estructura de carpetas
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# -- Git & IDE --
+.git
+.gitignore
+.idea/
+.vscode/
+
+# -- Secretos --
+.env
+.env.local

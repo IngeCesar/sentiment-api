@@ -1,0 +1,33 @@
+# --- EXCLUSIÓN DE ARTEFACTOS DE COMPILACIÓN ---
+# Evita la contaminación del entorno Linux con binarios compilados en el host (Windows/macOS).
+# Garantiza que Docker genere sus propios artefactos nativos.
+target/
+
+# --- CONFIGURACIÓN DE ENTORNOS DE DESARROLLO (IDE) ---
+# Eliminación de metadatos locales para mantener la neutralidad de la imagen.
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# --- HERRAMIENTAS DE ORQUESTACIÓN LOCAL ---
+# Se excluyen los wrappers de Maven para priorizar el runtime instalado en la imagen base.
+.mvn/
+mvnw
+mvnw.cmd
+
+# --- METADATOS DE CONTROL DE VERSIONES Y LOGS ---
+# Reducción drástica del tamaño del contexto de build al omitir el historial de Git.
+# Previene la fuga accidental de logs y documentación no productiva.
+.git
+.gitignore
+*.log
+HELP.md
+Dockerfile
+docker-compose*.yml
+Justfile
+.env

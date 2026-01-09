@@ -1,26 +1,44 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Analizador de Sentimientos</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+<html lang="">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="shortcut icon" href="favicon.svg" type="image/svg+xml" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<div class="container">
-    <h1>Analizador de Sentimientos</h1>
-    <p>Favor ingresar su opinión sobre el producto.</p>
+        <title>CesiumFlow | SentimentAPI - Inteligencia de Feedback</title>
 
-    <textarea 
-        id="textInput" 
-        placeholder="Escribe aquí el comentario del cliente..."
-    ></textarea>
+        <meta
+            name="description"
+            content="Analiza el sentimiento de tus clientes en tiempo real con CesiumFlow. Potencia tu toma de decisiones con nuestra tecnología de inteligencia artificial."
+        />
 
-    <button onclick="analyzeSentiment()">Analizar Sentimiento</button>
+        <meta property="og:title" content="CesiumFlow: SentimentAPI" />
+        <meta
+            property="og:description"
+            content="Transformamos el feedback de tus usuarios en datos accionables con IA."
+        />
+        <meta property="og:type" content="website" />
+        <!-- <meta
+            property="og:image"
+            content="https://dominio.com/preview-image.png"
+        />
+        <meta property="og:url" content="https://dominio.com" /> -->
 
-    <div id="result"></div>
-</div>
+        <meta name="theme-color" content="#0f1115" />
 
-<script src="script.js"></script>
-</body>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+            rel="stylesheet"
+        />
+        <script
+            src="https://kit.fontawesome.com/f816551dba.js"
+            crossorigin="anonymous"
+        ></script>
+    </head>
+    <body>
+        <div id="app"></div>
+        <script type="module" src="/src/main.js"></script>
+    </body>
 </html>

@@ -1,18 +1,58 @@
-# Java
+# --- INFRAESTRUCTURA DE DESARROLLO (OS/IDE) ---
+# Eliminación de metadatos locales para garantizar la neutralidad del repositorio.
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+.idea/
+.vscode/
+*.swp
+*.iml
+.classpath
+.project
+.settings/
+
+# --- BACKEND CORE (JAVA/MAVEN) ---
+# Se excluyen artefactos de construcción para forzar compilaciones limpias en CI/CD.
 target/
 *.class
-.idea/
-*.iml
-.vscode/
+*.jar
+*.war
+*.nar
+*.ear
 
-# Python
+# --- ENGINE (PYTHON/NLP) ---
+# Prevención de persistencia de bytecode y entornos virtuales aislados.
 __pycache__/
-*.py[cod]
-.ipynb_checkpoints/
+*.pyc
+*.pyo
+*.pyd
 venv/
+.venv/
 env/
-.env
+ds-api/venv/
+.ipynb_checkpoints/
 
-# System
-.DS_Store
-.mise/
+# --- GESTIÓN DE DATA & MODELOS ---
+# Política de exclusión de datasets masivos. 
+# Se preserva la estructura de directorios mediante .gitkeep (Entornos efímeros).
+data-science/data/raw/*
+data-science/data/processed/*
+!data-science/data/raw/.gitkeep
+!data-science/data/processed/.gitkeep
+
+# Serialización de modelos: Se permiten archivos .joblib por requisitos de ligereza.
+# Exclusión de formatos pesados (Deep Learning) para optimizar el almacenamiento.
+*.h5
+*.pt
+*.onnx
+
+# --- SEGURIDAD Y PERSISTENCIA ---
+# Hardening: Prohibición estricta de trazabilidad de secretos y variables de entorno.
+.env
+.env.local
+.env.production
+
+# Persistencia local de contenedores (Base de Datos).
+postgres-data/
+*.log

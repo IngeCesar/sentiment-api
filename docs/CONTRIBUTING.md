@@ -1,74 +1,114 @@
-# 🤝 Guía de Contribución y Estándares
+# 🤝 Guía de Contribución y Estándares - CesiumFlow
 
-## 🌳 Flujo de Trabajo (Git Flow)
+Bienvenido a la guía de desarrollo del equipo. Este documento asegura que todos (Java y Python devs) estemos alineados para movernos rápido sin romper el código.
 
-- **`main`**: 🔒 **Producción**. Requiere aprobación de **todo el equipo** para fusionar.
-- **`develop`**: 🚧 **Integración**. Es la base para crear nuevas ramas.
-- **Ramas**: Se crean desde `develop` y usan la convención `tipo/descripcion`.
+---
+
+## 🌳 Flujo de Trabajo (Git Flow Simplificado)
+
+Para mantener la velocidad en el Hackathon sin perder estabilidad:
+
+-   **`main`**: 🔒 **Producción**. Código estable y desplegable.
+    -   _Regla:_ Requiere **1 aprobación** (Tech Lead o Peer Review) para fusionar.
+    -   _Prohibido:_ Hacer push directo (siempre vía Pull Request).
+-   **`develop`**: 🚧 **Integración**. Aquí se juntan todas las piezas funcionales.
+-   **Ramas**: Se crean siempre desde `develop`.
+
+---
 
 ## 🎨 Estándares de Código
 
-- **Indentación**: 4 Espacios.
-- **Codificación**: UTF-8.
-- Idioma variables: Inglés.
-- **Final de línea**: LF (Estilo Linux/Unix).
+### General
 
-### ☕ Backend (Java)
+-   **Codificación**: UTF-8.
+-   **Idioma**: Variables y funciones en **Inglés** (recomendado) o Español (si hay consenso), pero **nunca Spanglish**.
+-   **Final de línea**: LF (Estilo Unix/Linux).
+    -   _Windows Users:_ Ejecuten este comando una vez para evitar romper el código a los demás:
+        ```bash
+        git config --global core.autocrlf input
+        ```
 
-- **Variables/Métodos**: `camelCase`.
-- **Clases**: `PascalCase`.
-- **Constantes**: `UPPER_SNAKE_CASE`.
+### ☕ Backend (Java / Spring Boot)
 
-### 🐍 Data Science (Python)
+-   **Estilo**: Google Java Format.
+-   **Naming**: `camelCase` (variables/métodos), `PascalCase` (Clases), `UPPER_SNAKE` (Constantes).
+-   **Lombok**: Uso obligatorio (`@Data`, `@Builder`) para mantener las clases limpias.
+-   **Logging**: Usar `@Slf4j`. Prohibido `System.out.println` en producción.
 
-- **Variables/Funciones**: `snake_case`.
-- **Clases**: `PascalCase`.
-- **Notebooks**: Limpiar outputs antes de subir.
+### 🐍 Data Science (Python / FastAPI)
 
-## 🏷️ Nombres de Ramas
+-   **Estilo**: PEP 8.
+-   **Naming**: `snake_case` (variables/funciones), `PascalCase` (Clases).
+-   **Notebooks (.ipynb)**: ⚠️ **CRÍTICO**.
+    -   Deben subirse con los **outputs limpios** (sin gráficos ni tablas renderizadas).
+    -   _Razón:_ Git no maneja bien los JSON de notebooks y genera conflictos masivos.
 
-Formato: `tipo/descripcion-corta` (minúsculas y guiones).
+---
 
-- `feat/` : Nuevas funcionalidades.
-- `fix/` : Corrección de errores.
-- `docs/` : Documentación.
-- `chore/` : Mantenimiento.
+## 📝 Conventional Commits (Semántico)
 
-## 🚀 Ciclo de Desarrollo
+Estandarizamos los mensajes para que el historial sea legible.
+**Formato:** `tipo: descripción en imperativo` (como dando una orden).
 
-1.  **Inicio**:
-    ```bash
-    git checkout develop
-    git pull origin develop
-    git checkout -b feat/mi-nueva-funcionalidad
-    ```
-2.  **Desarrollo**:
-    - Haz commits pequeños y descriptivos.
-    - Sube tus cambios: `git push origin feat/mi-nueva-funcionalidad`
-3.  **Pull Request (PR)**:
-    - Abre el PR hacia `develop`.
-    - Completa la checklist.
-    - Solicita Revisión (Reviewers): Asigna a un compañero.
-    - Espera el "Approve" ✅.
-    - Realiza el Merge: Solo cuando tengas luz verde.
+| Tipo       | Uso                                      | Ejemplo                                   |
+| :--------- | :--------------------------------------- | :---------------------------------------- |
+| `feat`     | Nueva funcionalidad                      | `feat: add sentiment analysis endpoint`   |
+| `fix`      | Corrección de error                      | `fix: resolve null pointer in service`    |
+| `docs`     | Documentación                            | `docs: update api_spec with health check` |
+| `refactor` | Cambio de código sin funcionalidad nueva | `refactor: simplify prediction logic`     |
+| `chore`    | Configuración/Build                      | `chore: update docker-compose ports`      |
+
+---
+
+## 🚀 Ciclo de Desarrollo (Paso a Paso)
+
+### 1. Inicio (Branching)
+
+Siempre actualiza tu local antes de crear una rama:
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b feat/nombre-funcionalidad
+```
+
+### 2. Desarrollo & Commit
+
+Haz commits pequeños y atómicos.
+
+```bash
+git add .
+git commit -m "feat: implement logic for timestamp handling"
+```
+
+### 3. Pull Request (PR)
+
+1.  Sube tu rama: `git push origin feat/nombre-funcionalidad`.
+2.  Abre el PR en GitHub apuntando a **`develop`**.
+3.  **Checklist de Autocontrol**:
+    -   [ ] ¿Compila/Ejecuta sin errores?
+    -   [ ] ¿Borré los `print()` de debug?
+    -   [ ] ¿Limpié los outputs del Jupyter Notebook?
+4.  Avisar por Discord/Telegram/NoCountry: _"PR listo para revisión"_.
+
+### 4. Merge
+
+Al recibir el ✅ (Approve), realiza el Merge
+
+---
 
 ## 🧹 Limpieza (Post-Merge)
 
-Una vez fusionado el PR, la rama remota se borra automáticamente. Para no acumular basura en tu local:
+Evita acumular ramas muertas en tu máquina local:
 
-1.  **Vuelve a la base y actualiza:**
-    ```bash
-    git checkout develop
-    git pull origin develop
-    ```
-2.  **Limpia referencias remotas (Prune):**
-    - Esto avisa a tu git local que la rama ya no existe en el servidor.
-    ```bash
-    git fetch -p
-    ```
-3.  **Borra tu rama local:**
-    ```bash
-    git branch -d feat/mi-nueva-funcionalidad
-    ```
+```bash
+# 1. Volver a base y actualizar
+git checkout develop
+git pull origin develop
 
----
+# 2. Borrar referencias remotas que ya no existen (Prune)
+git fetch -p
+
+# 3. Borrar tu rama local ya fusionada
+git branch -d feat/mi-funcionalidad-vieja
+```

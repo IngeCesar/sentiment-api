@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "app.sentiment-engine.url",
+      "type": "java.lang.String",
+      "description": "URL del microservicio de IA en Python. Por defecto: http://localhost:5000"
+    }
+  ]
+}
