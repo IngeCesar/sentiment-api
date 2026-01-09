@@ -22,10 +22,10 @@ def limpiar_texto(texto: str) -> str:
     """
     Limpia el texto removiendo URLs, menciones, hashtags especiales y caracteres no deseados.
     Preserva tildes y ñ para el español.
-    
+
     Args:
         texto (str): Texto a limpiar
-        
+
     Returns:
         str: Texto limpio en minúsculas
     """
@@ -46,107 +46,100 @@ def limpiar_texto(texto: str) -> str:
 def extraer_keywords(texto: str, modelo, vectorizador, top_n: int = 5) -> List[str]:
     """
     Extrae las palabras clave más relevantes del texto usando los coeficientes del modelo.
-    
+
     Args:
         texto (str): Texto de entrada a analizar
         modelo: Modelo de clasificación entrenado (LogisticRegression)
         vectorizador: Vectorizador TF-IDF entrenado
         top_n (int): Número de keywords a retornar
-        
+
     Returns:
         list: Lista de strings con las top N palabras presentes en el texto
     """
     # Limpiar el texto de entrada
     texto_limpio = limpiar_texto(texto)
-    
+
     # Vectorizar el texto
     texto_tfidf = vectorizador.transform([texto_limpio])
-    
+
     # Obtener la clase predicha
     clase_predicha = modelo.predict(texto_tfidf)[0]
-    
+
     # Mapear clase a índice
     clases = modelo.classes_
     idx_clase = np.where(clases == clase_predicha)[0][0]
-    
+
     # Obtener coeficientes para la clase predicha
     coeficientes = modelo.coef_[idx_clase]
-    
+
     # Obtener nombres de características
     feature_names = vectorizador.get_feature_names_out()
-    
+
     # Obtener las palabras presentes en el texto (TF-IDF > 0)
     texto_vector = texto_tfidf.toarray()[0]
     palabras_presentes_idx = np.where(texto_vector > 0)[0]
-    
+
     # Calcular contribución: coeficiente × TF-IDF para palabras presentes
     contribuciones = []
     for idx in palabras_presentes_idx:
         palabra = feature_names[idx]
         contribucion = abs(coeficientes[idx] * texto_vector[idx])
         contribuciones.append((palabra, contribucion))
-    
+
     # Ordenar por contribución y tomar las top N
     contribuciones.sort(key=lambda x: x[1], reverse=True)
     keywords = [palabra for palabra, _ in contribuciones[:top_n]]
-    
+
     return keywords
 
 
 def predecir_sentimiento(texto: str, modelo, vectorizador, top_n_keywords: int = 5) -> Dict:
     """
     Función completa de predicción para API de sentimientos.
-    
-    Args:
-        texto (str): Texto a analizar
-        modelo: Modelo de clasificación entrenado
-        vectorizador: Vectorizador TF-IDF entrenado
-        top_n_keywords (int): Número de keywords a extraer
-        
-    Returns:
-        dict: {
-            "prediction": str,      # "Positivo", "Negativo" o "Neutro"
-            "probability": float,   # Confianza de la predicción (0.0 - 1.0)
-            "keywords": list        # Lista de strings con palabras clave
-        }
+    INCLUYE SANITIZACIÓN: Elimina los corchetes [ ] de la predicción.
     """
     # Limpiar texto
     texto_limpio = limpiar_texto(texto)
-    
+
     # Vectorizar
     texto_tfidf = vectorizador.transform([texto_limpio])
-    
-    # Predicción
-    prediccion = modelo.predict(texto_tfidf)[0]
-    
+
+    # Predicción RAW (Tal cual sale del modelo, ej: "[POS]")
+    prediccion_raw = modelo.predict(texto_tfidf)[0]
+
     # Probabilidades
     probabilidades = modelo.predict_proba(texto_tfidf)[0]
-    
-    # Extraer la probabilidad de la clase predicha
+
+    # IMPORTANTE: Usamos prediccion_raw para buscar en las clases del modelo
+    # (El modelo no sabe que queremos quitar los corchetes)
     clases = modelo.classes_
-    idx_prediccion = np.where(clases == prediccion)[0][0]
+    idx_prediccion = np.where(clases == prediccion_raw)[0][0]
     confianza = float(probabilidades[idx_prediccion])
-    
+
     # Extraer keywords
     keywords = extraer_keywords(texto, modelo, vectorizador, top_n=top_n_keywords)
-    
-    # Retornar resultado en formato API
+
+    # --- SANITIZACIÓN EN LA FUENTE ---
+    # Limpiamos la predicción justo antes de entregarla al mundo
+    prediccion_limpia = prediccion_raw.replace("[", "").replace("]", "")
+
+    # Retornar resultado en formato API con datos limpios
     return {
-        "prediction": prediccion,
+        "prediction": prediccion_limpia, # Ej: "POS"
         "probability": confianza,
         "keywords": keywords
     }
 
 
-def cargar_modelo(modelo_path: str = 'sentiment_model.joblib', 
+def cargar_modelo(modelo_path: str = 'sentiment_model.joblib',
                   vectorizador_path: str = 'tfidf_vectorizer.joblib'):
     """
     Carga el modelo y vectorizador desde archivos joblib.
-    
+
     Args:
         modelo_path (str): Ruta al archivo del modelo
         vectorizador_path (str): Ruta al archivo del vectorizador
-        
+
     Returns:
         tuple: (modelo, vectorizador)
     """
@@ -159,7 +152,7 @@ def cargar_modelo(modelo_path: str = 'sentiment_model.joblib',
 if __name__ == "__main__":
     # Cargar modelo y vectorizador
     modelo, vectorizador = cargar_modelo()
-    
+
     # Ejemplos de predicción
     textos_prueba = [
         "Estoy muy feliz y emocionado por este logro increíble",
@@ -168,16 +161,16 @@ if __name__ == "__main__":
         "¡Qué furia! Esto es completamente inaceptable",
         "Tengo miedo de lo que pueda pasar mañana"
     ]
-    
+
     print("=" * 80)
     print("ANÁLISIS DE SENTIMIENTOS - API")
     print("=" * 80)
-    
+
     for i, texto in enumerate(textos_prueba, 1):
         resultado = predecir_sentimiento(texto, modelo, vectorizador)
         print(f"\n{i}. TEXTO: {texto}")
         print(f"   SENTIMIENTO: {resultado['prediction']}")
         print(f"   CONFIANZA: {resultado['probability']:.2%}")
         print(f"   KEYWORDS: {', '.join(resultado['keywords'])}")
-    
+
     print("\n" + "=" * 80)

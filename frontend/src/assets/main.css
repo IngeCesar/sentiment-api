@@ -1,0 +1,219 @@
+/* --- Paleta de colores personalizada de estilo Dark mode UI (Neon High-Key) --- */
+:root {
+    --cesium-green: #a5fa6d;
+    --cesium-cyan: #53d9ff;
+    --cesium-dark: #0f1115;
+    --cesium-surface: #1e2128;
+
+    --cesium-danger: #ff5f85;
+    --cesium-warning: #ffd166;
+    --cesium-info: #b185ff;
+
+    /* Inyección para Bootstrap */
+    --bs-primary: var(--cesium-cyan);
+    --bs-success: var(--cesium-green);
+    --bs-danger: var(--cesium-danger);
+    --bs-warning: var(--cesium-warning);
+    --bs-info: var(--cesium-info);
+
+    --bs-primary-rgb: 83, 217, 255;
+    --bs-success-rgb: 165, 250, 109;
+    --bs-danger-rgb: 255, 95, 133;
+
+    --bs-body-bg: var(--cesium-dark);
+    --bs-body-color: #ffffff;
+
+    --radius: 0.5rem;
+    --radius-lg: 1rem;
+
+    --space-1: 0.25rem; /* 4px */
+    --space-2: 0.5rem; /* 8px */
+    --space-3: 1rem; /* 16px */
+    --space-4: 1.5rem; /* 24px */
+    --space-5: 3rem; /* 48px */
+}
+
+.card {
+    --bs-card-bg: var(--cesium-surface);
+    --bs-card-border-color: #3b3f46;
+}
+
+.btn-primary {
+    --bs-btn-color: var(--cesium-dark);
+    --bs-btn-font-weight: 700;
+    --bs-btn-bg: var(--cesium-cyan);
+    --bs-btn-border-color: var(--cesium-cyan);
+
+    --bs-btn-hover-bg: var(--cesium-green);
+    --bs-btn-hover-border-color: var(--cesium-green);
+    --bs-btn-hover-color: var(--cesium-dark);
+
+    --bs-btn-active-bg: var(--cesium-green);
+    --bs-btn-active-border-color: var(--cesium-green);
+    --bs-btn-active-color: var(--cesium-dark);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--cesium-cyan);
+    --bs-btn-border-color: var(--cesium-cyan);
+    --bs-btn-bg: transparent;
+    --bs-btn-font-weight: 700;
+
+    --bs-btn-hover-bg: var(--cesium-cyan);
+    --bs-btn-hover-border-color: var(--cesium-cyan);
+    --bs-btn-hover-color: var(--cesium-dark);
+
+    --bs-btn-active-bg: var(--cesium-cyan);
+    --bs-btn-active-border-color: var(--cesium-cyan);
+    --bs-btn-active-color: var(--cesium-dark);
+}
+
+.shadow-glow {
+    box-shadow: 0 0 20px rgba(var(--bs-primary-rgb), 0.25);
+    transition: all 0.3s ease;
+}
+
+.shadow-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 35px rgba(var(--bs-success-rgb), 0.5);
+}
+
+/* Base de rem: 
+    62.5% de 16px (estándar) = 10px.
+    Ahora 1.6rem = 16px, 2.4rem = 24px, etc. 
+    Con bootstrap es mejor omitir este flujo*/
+html {
+    /* font-size: 62.5%; */
+    scroll-behavior: smooth;
+    background-color: var(--cesium-dark);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    outline: none;
+}
+
+body {
+    line-height: 1.6;
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    font-family: "Roboto", sans-serif;
+
+    background: linear-gradient(
+            to bottom,
+            rgba(15, 17, 21, 0.3),
+            rgba(15, 17, 21, 0.95)
+        ),
+        url("/background.webp");
+
+    background-color: var(--bs-body-bg);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    /* Fondo quieto al hacer scroll. */
+    background-attachment: fixed;
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+.surface-card {
+    background-color: rgba(30, 33, 40, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+
+    cursor: default;
+}
+/* Glow cyan suave */
+/* .surface-card:hover {
+    box-shadow: 0 0 30px rgba(83, 217, 255, 0.1);
+    border-color: rgba(83, 217, 255, 0.3);
+} */
+
+.custom-textarea {
+    background-color: rgba(15, 17, 21, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-family: "Roboto Mono", monospace;
+    font-size: 0.95rem;
+    resize: none;
+    transition: all 0.3s ease;
+}
+.custom-textarea:focus {
+    background-color: rgba(15, 17, 21, 0.8) !important;
+    border-color: var(--cesium-cyan);
+    box-shadow: 0 0 0 4px rgba(83, 217, 255, 0.1);
+}
+
+.custom-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.2) !important;
+
+    opacity: 1;
+
+    font-weight: 400;
+}
+
+.btn-primary:disabled {
+    background-color: #2c3038 !important;
+    border-color: #2c3038 !important;
+    color: #6c757d !important;
+    opacity: 1;
+    cursor: not-allowed;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Reset de elementos */
+img,
+picture,
+video,
+canvas,
+svg {
+    display: block;
+    max-width: 100%;
+    user-select: none;
+}
+
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.3s ease;
+}
+
+a:hover {
+    opacity: 0.8;
+}
+
+/* --- EFECTO BLUR / CRISTAL --- */
+/* .page-blur-enter-active,
+.page-blur-leave-active {
+    transition: opacity 0.4s ease, filter 0.4s ease;
+}
+
+.page-blur-enter-from {
+    opacity: 0;
+    filter: blur(8px);
+}
+
+.page-blur-leave-to {
+    opacity: 0;
+    filter: blur(8px);
+} */

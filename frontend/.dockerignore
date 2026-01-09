@@ -1,35 +1,31 @@
-# ========================
-# 1. OS & SYSTEM FILES
-# ========================
-# Operating system metadata that should not pollute the container
-.DS_Store
-Thumbs.db
+# Dependencias y Caché
+node_modules
+.npm
+.pnpm-store
 
-# ========================
-# 2. IDE CONFIGURATIONS
-# ========================
-# VS Code, IntelliJ, etc. settings
-.vscode/
-.idea/
+# Build Output
+dist
+coverage
+build
 
-# ========================
-# 3. GIT & VERSION CONTROL
-# ========================
-# Version control history and configuration
+# Seguridad y Secretos
+.env
+.env.*
+*.pem
+*.key
+
+# Git
 .git
 .gitignore
 
-# ========================
-# 4. LOGS & DOCS
-# ========================
-# Local logs or documentation files
+# IDE y Sistema Operativo
+.vscode
+.idea
+.DS_Store
+Thumbs.db
 *.log
-README.md
-LICENSE
 
-# ========================
-# 5. NODE MODULES (FUTURE PROOFING)
-# ========================
-# If you add npm/node later, never copy this folder
-node_modules/
-npm-debug.log
+# Docker metadata (opcional, para evitar copiarlo dentro de sí mismo)
+Dockerfile
+docker-compose*.yml
+README.md

@@ -1,66 +1,44 @@
-<!doctype html>
-<html lang="es">
+<!DOCTYPE html>
+<html lang="">
     <head>
         <meta charset="UTF-8" />
+        <link rel="shortcut icon" href="favicon.svg" type="image/svg+xml" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <title>CesiumFlow | SentimentAPI - Inteligencia de Feedback</title>
+
         <meta
             name="description"
-            content="AI Sentiment Analysis Tool by CesiumFlow"
+            content="Analiza el sentimiento de tus clientes en tiempo real con CesiumFlow. Potencia tu toma de decisiones con nuestra tecnología de inteligencia artificial."
         />
-        <title>Analizador de Sentimientos | CesiumFlow</title>
 
-        <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
-        <link rel="stylesheet" href="css/styles.css" />
+        <meta property="og:title" content="CesiumFlow: SentimentAPI" />
+        <meta
+            property="og:description"
+            content="Transformamos el feedback de tus usuarios en datos accionables con IA."
+        />
+        <meta property="og:type" content="website" />
+        <!-- <meta
+            property="og:image"
+            content="https://dominio.com/preview-image.png"
+        />
+        <meta property="og:url" content="https://dominio.com" /> -->
 
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <meta name="theme-color" content="#0f1115" />
 
-        <script src="js/script.js" defer></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+            rel="stylesheet"
+        />
+        <script
+            src="https://kit.fontawesome.com/f816551dba.js"
+            crossorigin="anonymous"
+        ></script>
     </head>
     <body>
-        <div class="layout-wrapper">
-            <main class="container">
-                <img
-                    src="assets/logo.svg"
-                    alt="CesiumFlow Logo"
-                    class="app-logo"
-                />
-
-                <h1>Analizador de Sentimientos</h1>
-                <p>Ingresa la opinión del cliente para detectar emociones.</p>
-
-                <textarea
-                    id="textInput"
-                    placeholder="Ej: El servicio fue excelente y rápido..."
-                    aria-label="Comentario del cliente"
-                ></textarea>
-
-                <button onclick="analyzeSentiment()">
-                    Analizar Sentimiento
-                </button>
-
-                <div id="result" aria-live="polite"></div>
-                <div id="keywords-container" class="keywords-box"></div>
-            </main>
-
-            <section class="stats-container">
-                <h2>📊 Métricas en Vivo</h2>
-
-                <div class="stat-card">
-                    <span class="stat-label">Total Analizado</span>
-                    <span id="total-counter" class="stat-value">0</span>
-                </div>
-
-                <div class="charts-grid">
-                    <div class="chart-box">
-                        <h3>Distribución</h3>
-                        <canvas id="sentimentChart"></canvas>
-                    </div>
-                    <div class="chart-box">
-                        <h3>Top Palabras</h3>
-                        <canvas id="keywordsChart"></canvas>
-                    </div>
-                </div>
-            </section>
-        </div>
+        <div id="app"></div>
+        <script type="module" src="/src/main.js"></script>
     </body>
 </html>

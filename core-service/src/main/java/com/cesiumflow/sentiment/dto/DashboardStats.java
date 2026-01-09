@@ -19,7 +19,7 @@ public class DashboardStats {
 
 	/**
 	 * Distribución de sentimientos para el gráfico circular (Donut Chart).
-	 * Ejemplo: {"[POS]": 10, "[NEG]": 5, "[NEU]": 2}
+	 * Ejemplo: {"POS": 10, "NEG": 5, "NEU": 2}
 	 */
 	private Map<String, Long> sentimentDistribution;
 
