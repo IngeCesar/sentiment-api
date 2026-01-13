@@ -4,16 +4,19 @@
             Distribución de Sentimientos
         </h5>
 
-        <div v-if="chartData" class="chart-container">
+        <div
+            v-if="hasData"
+            class="chart-container position-relative w-100 animate-fade-in"
+        >
             <Doughnut :data="chartData" :options="chartOptions" />
         </div>
 
-        <div v-else class="text-center text-muted py-5">
-            <div
-                class="spinner-border spinner-border-sm mb-2"
-                role="status"
-            ></div>
-            <p class="small m-0">Procesando gráfico...</p>
+        <div
+            v-else
+            class="text-center text-muted h-75 d-flex flex-column justify-content-center"
+        >
+            <i class="bi bi-pie-chart fs-1 mb-3 opacity-50"></i>
+            <p class="small m-0">No hay datos de distribución.</p>
         </div>
     </div>
 </template>
@@ -26,23 +29,20 @@ import { Doughnut } from "vue-chartjs";
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const props = defineProps({
-    stats: {
-        type: Object,
-        default: () => ({}),
-    },
+    stats: { type: Object, default: () => ({}) },
 });
 
-// Colores sincronizados con tu main.css (Cesium Palette)
-const COLORS = {
-    // POSITIVE -> --cesium-green (#a5fa6d)
-    POSITIVE: "#a5fa6d",
-    POSITIVO: "#a5fa6d",
-    // NEGATIVE -> --cesium-danger (#ff5f85)
-    NEGATIVE: "#ff5f85",
-    NEGATIVO: "#ff5f85",
-    // NEUTRAL -> --cesium-cyan (#53d9ff) o Info
-    NEUTRAL: "#53d9ff",
-    NEUTRO: "#53d9ff",
+/* --- Theming --- */
+
+/* Chart.js requiere HEX/RGB explícitos, no soporta var(--css) nativamente.
+   Valores espejo de main.css */
+const CESIUM_PALETTE = {
+    cyan: "#53d9ff",
+    green: "#a5fa6d",
+    danger: "#ff5f85",
+    info: "#b185ff",
+    surface: "rgba(30, 33, 40, 0.95)", // ajustado para tooltip
+    text: "#ffffff",
 };
 
 const LABELS_MAP = {
@@ -54,69 +54,90 @@ const LABELS_MAP = {
     NEUTRO: "Neutro",
 };
 
-const chartData = computed(() => {
-    if (!props.stats || Object.keys(props.stats).length === 0) return null;
+// --- Lógica de Datos ---
 
-    // Extraemos las llaves una sola vez para iterar sobre ellas
+const hasData = computed(
+    () => props.stats && Object.keys(props.stats).length > 0
+);
+
+// Helper inteligente para asignar colores basado en la clave (key)
+const getColor = (key) => {
+    const k = key.toUpperCase();
+    if (k.includes("POS")) return CESIUM_PALETTE.green;
+    if (k.includes("NEG")) return CESIUM_PALETTE.danger;
+    if (k.includes("NEU")) return CESIUM_PALETTE.cyan;
+    return CESIUM_PALETTE.info;
+};
+
+const chartData = computed(() => {
+    if (!hasData.value) return { labels: [], datasets: [] };
+
     const keys = Object.keys(props.stats);
     const values = Object.values(props.stats);
 
-    // 1. Areglo de Labels: Forzamos mayúsculas al buscar en el mapa
-    const labels = keys.map((k) => LABELS_MAP[k.toUpperCase()] || k);
-
-    // 2. Arreglo de Colores: Forzamos mayúsculas al buscar el color
-    const backgroundColors = keys.map(
-        (k) => COLORS[k.toUpperCase()] || "#b185ff"
-    );
-
     return {
-        labels: labels,
+        labels: keys.map((k) => LABELS_MAP[k.toUpperCase()] || k),
         datasets: [
             {
-                backgroundColor: backgroundColors,
                 data: values,
                 borderWidth: 0,
-                hoverOffset: 10,
+                hoverOffset: 15, // Efecto "Pop" al pasar el mouse
+                backgroundColor: keys.map((k) => getColor(k)),
             },
         ],
     };
 });
 
+// --- Configuración del Gráfico ---
+
 const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    cutout: "70%", // Dona más fina (Modern UI)
     plugins: {
         legend: {
             position: "bottom",
             labels: {
                 usePointStyle: true,
                 padding: 20,
-                color: "#ffffff", // IMPORTANTE: Texto blanco para Dark Mode
-                font: {
-                    family: "'Roboto', sans-serif", // Tu fuente global
-                    size: 12,
-                },
+                color: CESIUM_PALETTE.text,
+                font: { family: "'Roboto', sans-serif", size: 12 },
             },
         },
         tooltip: {
-            // Fondo oscuro sólido para tooltips
-            backgroundColor: "rgba(15, 17, 21, 0.95)",
-            titleColor: "#fff",
-            bodyColor: "#fff",
-            borderColor: "rgba(255,255,255,0.1)",
+            backgroundColor: CESIUM_PALETTE.surface,
+            titleColor: CESIUM_PALETTE.text,
+            bodyColor: CESIUM_PALETTE.text,
+            borderColor: "rgba(83, 217, 255, 0.2)", // Borde cyan sutil
             borderWidth: 1,
             padding: 12,
             cornerRadius: 8,
+            callbacks: {
+                label: (ctx) => ` ${ctx.label}: ${ctx.raw}`,
+            },
         },
     },
 };
 </script>
 
 <style scoped>
-/* Solo definimos altura y posición, el estilo visual viene de main.css (.surface-card) */
 .chart-container {
-    position: relative;
     height: 300px;
-    width: 100%;
+}
+
+/* Animación sutil de entrada */
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 </style>
