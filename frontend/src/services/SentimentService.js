@@ -1,37 +1,39 @@
 import api from "../api";
 
-// Mapa de seguridad por si el backend envía variaciones (opcional pero recomendado)
 const SENTIMENT_MAP = {
     POSITIVE: "POSITIVO",
     NEGATIVE: "NEGATIVO",
     NEUTRAL: "NEUTRO",
+    // Fallbacks
     POSITIVO: "POSITIVO",
     NEGATIVO: "NEGATIVO",
     NEUTRO: "NEUTRO",
 };
 
 export default {
-    /** Transforma DTO Backend -> ViewModel Frontend */
+    /**
+     * Analiza el texto y normaliza la respuesta para la UI.
+     * @param {string} text
+     */
     async analyze(text) {
-        const response = await api.post("/sentiment", { text });
-        const data = response.data;
+        const { data } = await api.post("/sentiment", { text });
 
         if (data.prediction === "CONNECTION_ERROR") {
-            throw new Error(
-                "El servicio de IA no está disponible temporalmente."
-            );
+            throw new Error("El motor de IA no está disponible.");
         }
 
         return {
+            id: data.id,
             sentiment:
-                SENTIMENT_MAP[data.prediction?.toUpperCase()] || "DEFAULT",
-            confidence: Math.round(data.probability * 100),
-            keywords: data.keywords || [],
+                SENTIMENT_MAP[data.prediction?.toUpperCase()] || "DESCONOCIDO",
+            // Convertimos probabilidad (0.98) a porcentaje entero (98)
+            confidence: Math.round((data.probability || 0) * 100),
+            keywords: Array.isArray(data.keywords) ? data.keywords : [],
         };
     },
 
     async getStats() {
-        const response = await api.get("/sentiment/stats");
-        return response.data;
+        const { data } = await api.get("/sentiment/stats");
+        return data;
     },
 };

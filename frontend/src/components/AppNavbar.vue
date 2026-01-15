@@ -5,58 +5,58 @@
         <div class="container">
             <router-link class="navbar-brand d-flex align-items-center" to="/">
                 <img src="/favicon.svg" alt="Logo" class="me-2 logo-brand" />
-                <span class="fw-bold d-none d-sm-block brand-text">
+                <span
+                    class="fw-bold d-none d-sm-block fs-5 text-gradient-primary"
+                >
                     CesiumFlow
                 </span>
             </router-link>
 
             <button
-                class="navbar-toggler border-0"
+                class="navbar-toggler border-0 focus-ring"
                 type="button"
                 data-bs-toggle="collapse"
                 data-bs-target="#navbarNav"
             >
-                <span class="navbar-toggler-icon"></span>
+                <i class="fas fa-bars text-white fs-4"></i>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <!-- Implementación temporal -->
-                    <li class="nav-item ms-3">
+                <ul
+                    class="navbar-nav ms-auto align-items-center gap-lg-4 gap-3 mt-3 mt-lg-0"
+                >
+                    <li class="nav-item">
                         <router-link
                             to="/stats"
-                            class="nav-link"
-                            active-class="active text-primary fw-bold"
+                            class="nav-link position-relative font-medium"
+                            active-class="active-link"
                         >
-                            <span class="d-inline-flex align-items-center">
-                                Estadísticas
-
-                                <span
-                                    class="badge rounded-pill bg-danger badge-beta ms-1"
-                                    style="transform: translateY(-8px)"
-                                >
-                                    BETA
-                                </span>
+                            Estadísticas
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-beta"
+                            >
+                                BETA
                             </span>
                         </router-link>
                     </li>
 
                     <li class="nav-item">
                         <a
-                            class="nav-link"
+                            class="nav-link d-flex align-items-center font-medium"
                             href="https://github.com/cesiumflow/"
                             target="_blank"
                         >
-                            <i class="fab fa-github me-1"></i> Github
+                            <i class="fab fa-github fs-5 me-2"></i>
+                            <span class="d-lg-none d-xl-inline">Github</span>
                         </a>
                     </li>
 
-                    <li class="nav-item ms-lg-3" v-if="showDemoBtn">
+                    <li class="nav-item" v-if="showDemoBtn">
                         <router-link
                             to="/dashboard"
-                            class="btn btn-outline-primary btn-sm px-4"
+                            class="btn btn-primary btn-sm px-4 shadow-glow fw-bold rounded-pill btn-hover-lift"
                         >
-                            <i class="fas fa-rocket me-1"></i> Probar Demo
+                            <i class="fas fa-rocket me-2"></i>Probar Demo
                         </router-link>
                     </li>
                 </ul>
@@ -67,89 +67,74 @@
 
 <script setup>
 defineProps({
-    showDemoBtn: {
-        type: Boolean,
-        default: true,
-    },
+    showDemoBtn: { type: Boolean, default: true },
 });
 </script>
 
 <style scoped>
 .custom-navbar {
-    background-color: rgba(15, 17, 21, 0.6) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(15, 17, 21, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 @media (min-width: 992px) {
     .custom-navbar {
-        top: 20px;
+        top: 24px;
         left: 50%;
         transform: translateX(-50%);
-        width: 90%;
-        max-width: 1100px;
-        border-radius: 16px;
+        width: 92%;
+        max-width: 1200px;
+        border-radius: 50px;
         border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        padding: 0.5rem 1.5rem !important;
     }
 }
 
 .logo-brand {
-    height: 40px;
+    height: 32px;
     width: auto;
-    border-radius: var(--radius);
-    transition: transform 0.3s ease;
-}
-
-.navbar-brand:hover .logo-brand {
-    transform: scale(1.2);
-}
-
-.brand-text {
-    font-size: 1.25rem;
-    font-weight: 700;
-    letter-spacing: -1px;
-
-    background: linear-gradient(to right, #fff, var(--cesium-cyan));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-
-    font-kerning: normal;
 }
 
 .nav-link {
-    transition: color 0.3s ease, text-shadow 0.3s ease;
-    font-size: 0.95rem;
-    font-weight: 500;
-}
-
-.nav-link:hover {
-    color: var(--cesium-cyan) !important;
-
-    text-shadow: 0 0 12px rgba(83, 217, 255, 0.5);
-}
-
-.nav-link:hover i {
-    color: var(--cesium-cyan);
+    color: rgba(255, 255, 255, 0.6) !important;
     transition: color 0.3s ease;
 }
-
-/* Implementación temporal, debe cambiar lógica de backend */
-.badge-beta {
-    font-size: 0.55rem;
-    padding: 0.35em 0.6em;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 5px rgba(220, 53, 69, 0.4);
+.nav-link:hover {
+    color: #fff !important;
 }
 
-@media (max-width: 991px) {
-    .badge-beta {
-        font-size: 0.5rem;
-    }
+.active-link {
+    color: var(--cesium-cyan) !important;
+    text-shadow: 0 0 12px rgba(83, 217, 255, 0.4);
+}
+
+.font-medium {
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.badge-beta {
+    font-size: 0.5rem;
+    padding: 0.35em 0.5em;
+    top: 5px !important;
+    box-shadow: 0 0 8px rgba(220, 53, 69, 0.4);
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+/* EFECTO DE ELEVACIÓN SUTIL */
+.btn-hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-hover-lift:hover {
+    transform: translateY(-2px);
+    /* Incrementa el glow existente un poco */
+    box-shadow: 0 0 20px rgba(83, 217, 255, 0.4) !important;
 }
 </style>
