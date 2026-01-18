@@ -4,6 +4,12 @@
       "name": "app.sentiment-engine.url",
       "type": "java.lang.String",
       "description": "URL del microservicio de IA en Python. Por defecto: http://localhost:5000"
+    },
+    {
+      "name": "app.sentiment-engine.timeout",
+      "type": "java.lang.Integer",
+      "description": "Tiempo máximo de espera (ms) para la respuesta de la IA.",
+      "defaultValue": 180000
     }
   ]
 }

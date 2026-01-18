@@ -1,6 +1,9 @@
 # --- INFRAESTRUCTURA DEL SERVICIO ---
 server:
   port: 8080
+  # Aumento del timeout en  Netty si la IA tarda mucho
+  netty:
+    connection-timeout: 180s
 
 spring:
   application:
@@ -12,10 +15,24 @@ spring:
     url: ${DB_URL:r2dbc:postgresql://localhost:5432/cesium_sentiment_db}
     username: ${DB_USER:cesium_user}
     password: ${DB_PASSWORD:cesium_password}
+    # Pool de conexiones para aguantar la carga del Batch
+    pool:
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+      validation-query: SELECT 1
 
   sql:
     init:
       mode: always # Garantiza la integridad del esquema y vistas en entornos efímeros.
+
+  # Configuración de transferencia (WebFlux):
+  # Optimiza el manejo de buffers para flujos binarios y carga de archivos.
+  http:
+    codecs:
+      # Evita DataBufferLimitException en el streaming de CSVs grandes.
+      # Tamaño seguro para un CSV de 500KB + Overhead
+      max-in-memory-size: 1MB
 
 # --- INTEGRACIÓN: ANALYTICS ENGINE (FASTAPI) ---
 app:
@@ -23,6 +40,8 @@ app:
     # Upstream desacoplado para el motor de inferencia NLP.
     # Justificación: Independencia del ciclo de vida y escalabilidad elástica de la IA.
     url: ${PYTHON_ENGINE_URL:http://localhost:5000}
+    # timeout aquí para inyectarlo en WebClientConfig.java
+    timeout: 180000
 
 # --- OBSERVABILIDAD Y TELEMETRÍA ---
 management:
@@ -33,13 +52,14 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health, info, metrics
 
 # --- AUDITORÍA Y CONTRATOS API ---
 logging:
   level:
     # Trazabilidad de operaciones R2DBC para debugging en flujos asíncronos.
-    "[org.springframework.data.r2dbc]": DEBUG
+    "[org.springframework.data.r2dbc]": INFO # DEBUG genera demasiado ruido en cargas masivas
+    "[com.cesiumflow]": DEBUG # Solo el código en debug
 
 springdoc:
   # Contrato OpenAPI para validación de endpoints y consumo del cliente (Frontend).

@@ -3,13 +3,59 @@
         <div
             class="container flex-grow-1 d-flex flex-column justify-content-center py-4"
         >
+            <div class="row justify-content-center mb-4">
+                <div class="col-lg-6">
+                    <div
+                        class="surface-card p-1 d-flex rounded-pill"
+                        style="border-radius: 50rem !important"
+                    >
+                        <button
+                            @click="setMode('text')"
+                            class="btn flex-fill rounded-pill fw-bold transition-all small"
+                            :class="
+                                mode === 'text'
+                                    ? 'btn-primary shadow-glow'
+                                    : 'text-white-50 hover-light'
+                            "
+                        >
+                            <i class="fas fa-keyboard me-2"></i>Texto
+                        </button>
+
+                        <button
+                            @click="setMode('batch')"
+                            class="btn flex-fill rounded-pill fw-bold transition-all small"
+                            :class="
+                                mode === 'batch'
+                                    ? 'btn-primary shadow-glow'
+                                    : 'text-white-50 hover-light'
+                            "
+                        >
+                            <i class="fas fa-file-csv me-2"></i>Lote CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div class="row g-4 justify-content-center align-items-stretch">
                 <div class="col-lg-6">
-                    <AnalysisInput
-                        v-model="inputText"
-                        :isLoading="isLoading"
-                        @analyze="analyzeText"
-                    />
+                    <transition name="fade-slide" mode="out-in">
+                        <AnalysisInput
+                            v-if="mode === 'text'"
+                            key="text-input"
+                            v-model="inputText"
+                            :isLoading="isLoading"
+                            @analyze="analyzeText"
+                        />
+
+                        <BatchInput
+                            v-else
+                            key="batch-input"
+                            v-model="batchFile"
+                            :isLoading="isLoading"
+                            @analyze="analyzeBatch"
+                            @error="(msg) => showFeedback(msg, 'warning')"
+                        />
+                    </transition>
                 </div>
 
                 <div class="col-lg-6">
@@ -18,7 +64,11 @@
                             <LoadingCard />
                         </div>
 
-                        <div v-else-if="result" key="result" class="h-100">
+                        <div
+                            v-else-if="mode === 'text' && result"
+                            key="result"
+                            class="h-100"
+                        >
                             <ResultCard
                                 class="h-100"
                                 :sentiment="result.sentiment"
@@ -46,29 +96,45 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, nextTick } from "vue";
 import AnalysisInput from "../components/AnalysisInput.vue";
 import ResultCard from "../components/ResultCard.vue";
 import LoadingCard from "../components/LoadingCard.vue";
 import EmptyCard from "../components/EmptyCard.vue";
 import ToastNotification from "../components/ToastNotification.vue";
 import SentimentService from "../services/SentimentService";
+import BatchInput from "../components/BatchInput.vue";
 
 // --- ESTADO ---
+const mode = ref("text"); // 'text' o 'batch'
 const inputText = ref("");
+const batchFile = ref(null);
 const isLoading = ref(false);
 const result = ref(null);
 const toast = ref({ show: false, message: "", type: "error" });
 
 // --- HELPERS ---
-const showFeedback = (msg, type = "error") => {
-    toast.value = { show: true, message: msg, type: type };
+const showFeedback = async (msg, type = "error") => {
+    // Desmonta el componente
+    toast.value.show = false;
+    // Asegura que el DOM se actualice
+    await nextTick();
+    // Monta uno nuevo (reinicia el timer del onMounted)
+    toast.value = {
+        show: true,
+        message: msg,
+        type: type,
+    };
+};
+
+const setMode = (newMode) => {
+    mode.value = newMode;
+    result.value = null;
 };
 
 // Limpieza reactiva: Si el usuario escribe, borramos el resultado anterior
-watch(inputText, () => {
+watch([inputText, batchFile], () => {
     if (result.value) result.value = null;
-    if (toast.value.show) toast.value.show = false;
 });
 
 const analyzeText = async () => {
@@ -153,6 +219,37 @@ const analyzeText = async () => {
         isLoading.value = false;
     }
 };
+
+const analyzeBatch = async () => {
+    if (!batchFile.value) return;
+
+    isLoading.value = true;
+    try {
+        const data = await SentimentService.uploadBatch(batchFile.value);
+
+        showFeedback(
+            `Proceso completado. Registros procesados: ${
+                data.totalProcessed || 0
+            }. ` +
+                `Exitosos: ${data.success || 0}. Fallidos: ${data.failed || 0}`,
+            "success"
+        );
+
+        batchFile.value = null; // Limpiar archivo tras éxito
+    } catch (error) {
+        // PRIORIDAD 1: El mensaje configurado en el interceptor o el servidor
+        // PRIORIDAD 2: El mensaje nativo del objeto Error (error.message)
+        // PRIORIDAD 3: Fallback genérico
+        const msg =
+            error.response?.data?.message ||
+            error.message ||
+            "Error inesperado al procesar el lote.";
+
+        showFeedback(msg, "error");
+    } finally {
+        isLoading.value = false;
+    }
+};
 </script>
 
 <style scoped>
@@ -163,11 +260,11 @@ const analyzeText = async () => {
 
 .fade-slide-enter-from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(15px);
 }
 
 .fade-slide-leave-to {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-15px);
 }
 </style>

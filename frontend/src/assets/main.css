@@ -136,6 +136,12 @@ a:hover {
     --bs-btn-active-color: var(--cesium-dark);
 }
 
+.hover-light:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+}
+
 /* Superficies con Efecto de Resplandor (Glow Surfaces) */
 /* Gradiente Vertical. Arriba tintado (20%), Abajo oscuro sólido (98%) para legibilidad */
 

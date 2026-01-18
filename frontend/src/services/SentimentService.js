@@ -32,6 +32,22 @@ export default {
         };
     },
 
+    async uploadBatch(file) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const { data } = await api.post("/sentiment/batch/csv", formData, {
+            // Eliminamos el Content-Type manual para que Axios
+            // y el navegador pongan el boundary correcto.
+            headers: {
+                "Content-Type": undefined,
+            },
+            timeout: 180000,
+        });
+
+        return data;
+    },
+
     async getStats() {
         const { data } = await api.get("/sentiment/stats");
         return data;
