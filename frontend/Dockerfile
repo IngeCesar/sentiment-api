@@ -27,7 +27,7 @@ COPY . .
 RUN npm run build
 
 # --- ETAPA 3: PRODUCCIÓN (Nginx) ---
-FROM nginx:alpine as production
+FROM nginx:alpine AS production
 
 # Instalamos curl para el Healthcheck
 RUN apk add --no-cache curl

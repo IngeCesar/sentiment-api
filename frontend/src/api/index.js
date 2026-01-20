@@ -13,6 +13,17 @@ const api = axios.create({
 api.interceptors.response.use(
     (response) => response, // Si todo sale bien, deja pasar la respuesta
     (error) => {
+        // Detección de Timeout
+        if (
+            error.code === "ECONNABORTED" ||
+            error.message.includes("timeout")
+        ) {
+            return Promise.reject(
+                new Error(
+                    "¡Vaya! El archivo es bastante grande y la conexión se cerró. Estamos trabajando para procesar volúmenes tan altos."
+                )
+            );
+        }
         // Error de Red (Servidor apagado / Sin internet / Timeout)
         if (!error.response) {
             return Promise.reject(
@@ -22,11 +33,11 @@ api.interceptors.response.use(
             );
         }
 
-        // Error 500 (El servidor explotó o está apagado el core-service)
-        if (error.response.status >= 500) {
+        // Error 500/503 (El servidor explotó o está apagado el core-service)
+        if (error.response.status === 503 || error.response.status >= 500) {
             return Promise.reject(
                 new Error(
-                    "El servicio no está disponible temporalmente. Intenta más tarde."
+                    "El servicio de IA no está disponible. Intenta más tarde."
                 )
             );
         }
