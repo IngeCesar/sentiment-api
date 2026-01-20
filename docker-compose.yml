@@ -28,6 +28,7 @@ services:
     build:
       context: ./core-service
       dockerfile: Dockerfile
+      target: production
     ports:
       - "8080:8080"
     environment:
@@ -50,6 +51,7 @@ services:
     build:
       context: ./data-science
       dockerfile: Dockerfile
+      target: production
     ports:
       - "5000:5000"
     environment:
@@ -71,6 +73,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: production
     ports:
       - "80:80"
     depends_on:
