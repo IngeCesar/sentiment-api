@@ -1,25 +1,22 @@
 # --- INFRAESTRUCTURA DEL SERVICIO ---
 server:
-  port: 8080
-  # Aumento del timeout en  Netty si la IA tarda mucho
+  # Railway inyecta la variable PORT. Si no existe, usa 8080 (local).
+  port: ${PORT:8080}
   netty:
     connection-timeout: 180s
 
 spring:
   application:
     name: Sentiment-Core
-
-  # Stack Reactivo (R2DBC): Maximiza el throughput mediante I/O no bloqueante.
-  # Soporta inyección dinámica para orquestación en contenedores con fallback local.
   r2dbc:
+    # Esto permite que si Railway nos da una URL completa, la usemos.
+    # Si no, usa la local.
     url: ${DB_URL:r2dbc:postgresql://localhost:5432/cesium_sentiment_db}
     username: ${DB_USER:cesium_user}
     password: ${DB_PASSWORD:cesium_password}
-    # Pool de conexiones para aguantar la carga del Batch
     pool:
       initial-size: 5
       max-size: 20
-      max-idle-time: 30m
       validation-query: SELECT 1
 
   sql:
@@ -37,10 +34,8 @@ spring:
 # --- INTEGRACIÓN: ANALYTICS ENGINE (FASTAPI) ---
 app:
   sentiment-engine:
-    # Upstream desacoplado para el motor de inferencia NLP.
-    # Justificación: Independencia del ciclo de vida y escalabilidad elástica de la IA.
+    # Esto es CRÍTICO. En la nube apuntará al dominio interno de Railway.
     url: ${PYTHON_ENGINE_URL:http://localhost:5000}
-    # timeout aquí para inyectarlo en WebClientConfig.java
     timeout: 180000
 
 # --- OBSERVABILIDAD Y TELEMETRÍA ---
