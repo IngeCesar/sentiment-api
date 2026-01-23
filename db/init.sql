@@ -33,14 +33,15 @@ WHERE prediction IS NOT NULL
 GROUP BY prediction;
 
 -- 2. Bar Chart View: Top palabras clave con limpieza de formato
--- Soluciona el bug de arrays mixtos (JSON [] vs Postgres {}) y alinea el nombre a 'view_top_keywords'
+-- Soluciona el bug de arrays mixtos y añade compatibilidad estricta con Docker
 CREATE OR REPLACE VIEW view_top_keywords AS
 SELECT
     word AS keyword,
     COUNT(*) AS count
 FROM (
-    -- Lógica de limpieza profunda: convierte corchetes a llaves y limpia comillas
-    SELECT TRIM(BOTH ' "''{}[]' FROM unnest(string_to_array(translate(keywords, '[]', '{}'), ','))) AS word
+    -- CAMBIO CRÍTICO AQUÍ: Se añadió "::text" después de keywords
+    -- Esto convierte el Array a Texto explícitamente antes de procesarlo
+    SELECT TRIM(BOTH ' "''{}[]' FROM unnest(string_to_array(translate(keywords::text, '[]', '{}'), ','))) AS word
     FROM sentiment_records
     ) AS subquery
 WHERE word IS NOT NULL AND length(word) > 3 -- Filtro para omitir conectores cortos
