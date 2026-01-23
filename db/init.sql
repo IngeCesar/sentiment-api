@@ -2,40 +2,48 @@
 -- Uso de UUID para garantizar escalabilidad en sistemas distribuidos
 CREATE TABLE IF NOT EXISTS sentiment_records (
     -- Identificador único universal para evitar colisiones de datos
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                                                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     original_text TEXT NOT NULL,
     prediction VARCHAR(50) NOT NULL,
     probability DOUBLE PRECISION NOT NULL,
     -- Arreglo nativo para manejo eficiente de palabras clave
     keywords TEXT[],
-    
+
     -- TIMESTAMPTZ y DEFAULT NOW() para máxima robustez
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
-);
+    );
 
 -- Índice opcional para optimizar búsquedas y filtrado por fecha
-CREATE INDEX idx_sentiment_created_at ON sentiment_records(created_at);
+CREATE INDEX IF NOT EXISTS idx_sentiment_created_at ON sentiment_records(created_at);
 
 -- -------------------------------------------
--- VISTAS PARA ANALÍTICA (DASHBOARD)
+-- VISTAS PARA ANALÍTICA (DASHBOARD) - VERSIÓN CORREGIDA Y ROBUSTA
 -- -------------------------------------------
 
--- 1. Pie Chart View: Agregación para distribución global de sentimientos
+-- 1. Pie Chart View: Distribución global con protección contra nulos
+-- Se asegura de que la columna se llame 'sentiment' para coincidir con Java
 CREATE OR REPLACE VIEW view_sentiment_distribution AS
 SELECT
-    prediction as sentiment,
-    COUNT(*) as count
+    prediction AS sentiment,
+    COUNT(*) AS count
 FROM sentiment_records
+WHERE prediction IS NOT NULL
+  AND prediction != 'ERROR'
+  AND prediction != ''
 GROUP BY prediction;
 
--- 2. Bar Chart View: Extracción de las 3 palabras clave más frecuentes
+-- 2. Bar Chart View: Top palabras clave con limpieza de formato
+-- Soluciona el bug de arrays mixtos (JSON [] vs Postgres {}) y alinea el nombre a 'view_top_keywords'
 CREATE OR REPLACE VIEW view_top_keywords AS
 SELECT
-    TRIM(word) as keyword,
-    COUNT(*) as count
-FROM sentiment_records,
-    unnest(keywords) as word -- Descompone el array en filas para conteo
-WHERE length(word) > 3 -- Filtro básico para omitir conectores y ruido
-GROUP BY keyword
+    word AS keyword,
+    COUNT(*) AS count
+FROM (
+    -- Lógica de limpieza profunda: convierte corchetes a llaves y limpia comillas
+    SELECT TRIM(BOTH ' "''{}[]' FROM unnest(string_to_array(translate(keywords, '[]', '{}'), ','))) AS word
+    FROM sentiment_records
+    ) AS subquery
+WHERE word IS NOT NULL AND length(word) > 3 -- Filtro para omitir conectores cortos
+GROUP BY word
 ORDER BY count DESC
-LIMIT 3;
+    LIMIT 10; -- Aumentado a 10 para dar más riqueza al gráfico
