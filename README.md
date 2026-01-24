@@ -1,160 +1,171 @@
-# 🌊 CesiumFlow: SentimentAPI
+# 🌊 CesiumFlow: Sentiment Intelligence Platform
 
-> **Orquestador reactivo de análisis de sentimientos e inteligencia de feedback.**
+> **Orquestador reactivo Full-Stack para análisis de sentimientos e inteligencia de feedback.**
 
-![Release](https://img.shields.io/badge/Release-v1.0.0--beta-blue)
+![Release](https://img.shields.io/badge/Release-v2.0.0--stable-blue)
 ![Stack](https://img.shields.io/badge/Stack-Reactive--Microservices-green)
+![Frontend](https://img.shields.io/badge/Frontend-Vue3_%2B_Vite-42b883)
 ![License](https://img.shields.io/badge/License-MIT-gray)
 
 ## 🎯 Visión General
 
-**CesiumFlow** es un ecosistema de microservicios diseñado para la transformación de feedback no estructurado en activos de datos accionables. Mediante un stack reactivo y procesamiento NLP descentralizado, la plataforma permite la categorización de sentimientos y extracción de métricas críticas con alta eficiencia y baja latencia.
+**CesiumFlow** no es otro analizador de texto monolítico. Es un ecosistema de microservicios distribuido diseñado para transformar feedback no estructurado en activos de datos accionables.
+
+A diferencia de las arquitecturas tradicionales que se ahogan bajo carga, CesiumFlow implementa un **stack reactivo híbrido**. El sistema ingesta grandes volúmenes de opiniones, delega el procesamiento pesado a un motor de inferencia dedicado y visualiza tendencias en tiempo real sin latencia perceptible.
 
 ### 🏛️ Arquitectura y Stack Técnico
 
-El proyecto implementa un patrón de **desacoplamiento funcional** diseñado para la escalabilidad. A continuación, se detallan las piezas core del ecosistema:
+El sistema opera bajo un patrón estricto de **Microservicios Orquestados**. Cada componente tiene una responsabilidad única y un contrato de interfaz claro.
 
-| Componente        | Tecnología   | Versión / Distribución |
-| :---------------- | :----------- | :--------------------- |
-| **Runtime Java**  | Java         | 17 (Eclipse Temurin)   |
-| **Build Tool**    | Maven        | 3.9.x                  |
-| **Framework**     | Spring Boot  | 3.5.9 (WebFlux)        |
-| **IA Engine**     | Python       | 3.14.2                 |
-| **API Engine**    | FastAPI      | 0.127.x                |
-| **ML Stack**      | Scikit-learn | 1.8.x                  |
-| **Persistencia**  | PostgreSQL   | 15-alpine              |
-| **Documentación** | OpenAPI 3.0  | Springdoc-openapi v2.x |
+| Componente | Tecnología Principal | Puerto | Responsabilidad |
+| :--- | :--- | :--- | :--- |
+| **Frontend (Edge)** | Vue 3 + Vite (Node 24) | `5173` | UI reactiva, carga de datasets y dashboard de métricas en tiempo real. |
+| **Core Service** | Java 17 + Spring Boot 3.5 | `8080` | Orquestación reactiva (WebFlux), validación y gestión de transacciones. |
+| **Sentiment Engine** | Python 3.14 + FastAPI | `5000` | Inferencia ML (Scikit-learn) y procesamiento NLP de alto rendimiento. |
+| **Persistence** | PostgreSQL 15-alpine | `5432` | Almacenamiento relacional y vistas materializadas para analítica. |
 
-1. **Core Service:** Orquestador reactivo encargado de la lógica de negocio y persistencia R2DBC.
-2. **Inference Engine:** Motor especializado en el procesamiento del pipeline NLP.
-3. **Persistence Layer:** Almacén relacional optimizado para telemetría en tiempo real.
+#### Flujo de Datos Simplificado
+
+```mermaid
+graph LR
+    User[Usuario] -->|HTTP/Web| UI[Frontend Vue3]
+    UI -->|REST/Stream| Core[Core Service Java]
+    Core <-->|Inferencia| ML[Sentiment Engine Python]
+    Core -->|R2DBC| DB[(PostgreSQL)]
+```
+
+
+## 🛠️ Prerrequisitos de Infraestructura
+
+Para levantar este clúster, no negociamos con el entorno. Necesitas lo siguiente:
+
+1.  [**Docker Desktop**](https://www.docker.com/products/docker-desktop/): El motor de ejecución. **Debe estar corriendo.**
+2.  **Puertos Libres:** Asegúrate de que nadie esté ocupando el `8080`, `5173`, `5000` o `5432` en tu máquina.
+3.  **Git Bash / WSL2 (Windows):** Si estás en Windows, usa una terminal decente. CMD/PowerShell pueden dar problemas con scripts de shell.
+
+### ⚡ Herramientas de Productividad (Recomendado)
+Para no perder tiempo escribiendo comandos largos de Docker, usamos **Just**:
+-   [**Just (Task Runner)**](https://github.com/casey/just#installation): Abstracción de comandos operativos.
 
 ---
 
-## 🛠️ Prerrequisitos y Herramientas
+## 🚀 Guía de Despliegue (Quick Start)
 
-Para garantizar la estabilidad y paridad del entorno, se requiere la instalación de las siguientes herramientas oficiales:
-
-### 🐳 Infraestructura y Runtime
-
--   [**Docker Desktop**](https://www.docker.com/products/docker-desktop/): Motor principal de virtualización. Debe estar en ejecución para levantar el clúster.
-    -   _Nota: Incluye **Docker Compose**, necesario para la orquestación de los microservicios._
-
-### ⚡ Automatización y Productividad (DX)
-
--   [**Just (Task Runner)**](https://github.com/casey/just#installation): Herramienta de automatización de comandos (IaC).
--   [**Mise-en-place**](https://mise.jdx.dev/getting-started.html): Gestor de versiones para sincronizar **Java 17** y **Python 3.14** localmente (opcional si se usa exclusivamente Docker).
-
----
-
-## 🚀 Guía de Inicio Rápido (Quick Start)
+Sigue este protocolo estrictamente para evitar inconsistencias de entorno.
 
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/cesiumflow/sentiment-api.git && cd sentiment-api
+git clone [https://github.com/cesiumflow/sentiment-api.git](https://github.com/cesiumflow/sentiment-api.git)
+cd sentiment-api
 ```
 
 ### 2. Configurar el entorno
-
-Copia el archivo de plantilla y ajusta tus credenciales (el archivo `.env` está protegido por `.gitignore`).
+El sistema necesita inyección de secretos. Copia la plantilla base (el .env real está en .gitignore por seguridad).
 
 ```bash
 cp .env.example .env
 ```
 
-### 3. Lanzar el ecosistema completo
+### 3. Lanzar el ecosistema
+   Tenemos dos vías de despliegue. Elige la que corresponda a tu necesidad.
 
-Utilizamos **Just** para abstraer la complejidad operativa de Docker Compose y garantizar la paridad entre entornos.
+Opción A: Vía Rápida (Recomendada con `just`)
+Si instalaste `just`, levanta todo el entorno de desarrollo con hot-reload activo:
 
 ```bash
-# Inicializa el clúster en modo desarrollo con Hot-Reload activo
 just dev
+# Esto equivale a: docker compose up -d --build
 ```
 
+### Opción B: Vía Manual (Docker Compose)
+Si prefieres hacerlo manualmente o necesitas simular producción:
+
 ```bash
-# Verificar el estado de los servicios y el stream de logs
-just logs
+# Entorno de Desarrollo (Hot-Reload, Debugging)
+docker compose up -d --build
+
+# Entorno de Producción (Artefactos compilados, Nginx, optimizado)
+docker compose -f docker-compose.yml up -d --build
 ```
+
+### 4. Validación de Servicios
+   Una vez que los contenedores estén estables, verifica los puntos de entrada:
+
+-   🖥️ Aplicación Web: http://localhost:5173 (o puerto 80 en modo prod)
+
+-   📚 Swagger API Docs: http://localhost:8080/swagger-ui.html
+
+-   ⚙️ Health Check: http://localhost:8080/actuator/health
+
+
+## ⚙️ Operaciones y Comandos (Justfile)
+
+Centralizamos la complejidad operativa en el `Justfile`. Usen estos comandos para mantener el ciclo de vida del software.
+
+| Comando | Acción Real | Justificación Técnica |
+| :--- | :--- | :--- |
+| `just dev` | `up -d --build` | Inicializa el clúster completo sincronizando código fuente. |
+| `just logs` | `logs -f` | Stream unificado de telemetría de todos los servicios. |
+| `just clean` | `down --rmi -v` | **Purga total**. Borra contenedores, volúmenes y caché. Útil si corrompes la BD. |
+| `just reset-docker` | `prune + rm` | Hard reset. Úsese solo en caso de colisiones de red críticas. |
 
 > [!IMPORTANT]
->
-> ### 💡 Tips para Desarrolladores (Windows)
->
-> Dado que el ecosistema corre sobre contenedores Linux, es crucial mantener la compatibilidad de archivos:
->
-> -   **Finales de línea (LF):** Asegúrate de que tu editor (VS Code/IntelliJ) esté configurado para usar **LF** en lugar de **CRLF**. Los archivos con `CRLF` pueden causar errores de ejecución en el `Justfile` y scripts dentro de Docker.
-> -   **Terminal recomendada:** Utiliza **Git Bash** o **WSL2** para ejecutar los comandos de `just`. La terminal estándar de Windows (CMD) puede tener limitaciones con la sintaxis de los comandos de automatización.
-
-## 💻 Configuración del Entorno Local (Opcional)
-
-Si deseas contar con soporte completo de tu IDE (autocompletado, linting y tests locales) sin depender exclusivamente de los contenedores, sigue estos pasos para sincronizar tu entorno con **mise**:
-
-```bash
-# Autorizar, instalar runtimes y verificar paridad
-mise trust && mise install
-```
-
-Una vez finalizada la instalación, confirme las versiones:
-
--   **Java:** Ejecute `java -version`
--   **Python:** Ejecute `python --version`
-
-> [!NOTE]
->
-> ### 💡 Soporte de IDE y Alternativas
->
-> Este paso es altamente recomendado para habilitar las capacidades de **análisis estático de código** y autocompletado en **VS Code** o **IntelliJ IDEA**.
->
-> -   **Alternativa Manual:** Si prefieres no usar `mise`, asegúrate de tener instalados localmente **Java 17 (Temurin)** y **Python 3.14.x** manualmente para garantizar la paridad con los contenedores y evitar errores de compilación en tu editor.
-
-## 📂 Estructura del Ecosistema
-
-El repositorio está organizado siguiendo un patrón de **Microservicios Políglotas**, desacoplando la inteligencia de datos de la lógica de negocio y la persistencia.
-
-```text
-.
-├── core-service/          # Microservicio Java (Spring Boot + R2DBC)
-│   ├── src/               # Lógica de dominio y orquestación
-│   └── pom.xml            # Dependencias del ecosistema Maven
-├── data-science/          # Engine Python (FastAPI + Scikit-learn)
-│   ├── models/            # Modelos serializados (.joblib)
-│   └── src/               # Inferencia NLP y procesamiento de texto
-├── db/                    # Infraestructura de datos
-│   └── init.sql           # Definición de esquemas y proyecciones
-├── .env.example           # Contrato de variables de entorno
-├── docker-compose.yml     # Orquestador de topología de red
-└── Justfile               # Manifiesto de automatización operativa
-```
-
-## ⚙️ Comandos de Operación (Justfile)
-
-Para agilizar el desarrollo y la gestión de infraestructura, hemos centralizado las tareas críticas en el `Justfile`. Esto garantiza que todos los miembros del equipo utilicen los mismos estándares operativos.
-
-| Comando             | Acción          | Justificación Técnica                                                  |
-| :------------------ | :-------------- | :--------------------------------------------------------------------- |
-| `just dev`          | `up -d --build` | Inicializa el clúster con sincronización de código y persistencia.     |
-| `just logs`         | `logs -f`       | Despliega el stream de telemetría de todos los servicios.              |
-| `just clean`        | `down --rmi -v` | Purga total de contenedores, volúmenes y caché de imágenes.            |
-| `just reset-docker` | `prune + rm`    | Hard reset ante colisiones críticas de red o estados inconsistentes.   |
-| `just test-int`     | `mvn test`      | Ejecuta la suite de integración validando el contrato entre servicios. |
-
-## 🛡️ Seguridad y Contratos API
-
-El ecosistema **CesiumFlow** sigue principios de seguridad por diseño y documentación basada en contratos.
-
-### 🔐 Gobernanza de Secretos
-
--   **Aislamiento de Configuración:** Las credenciales de infraestructura se inyectan dinámicamente vía `.env`.
--   **Protección de Versiones:** El archivo `.env` está estrictamente excluido del historial de Git para evitar fugas de seguridad. Consulte `.env.example` para la estructura base.
-
-### 📜 Especificación Técnica (Contract-First)
-
-La documentación del API se genera dinámicamente bajo el estándar **OpenAPI 3.0**. Esto permite que los consumidores (Frontend y Dashboards) mantengan sincronía con el esquema de datos del Core.
-
--   **Swagger UI:** `http://localhost:8080/swagger-ui.html`
--   **JSON Spec:** `http://localhost:8080/v3/api-docs`
+> **Usuarios de Windows:**
+> Asegúrense de que su editor (VS Code/IntelliJ) use finales de línea **LF** y no CRLF. Los scripts de shell dentro de los contenedores Linux fallarán si detectan caracteres de retorno de carro de Windows.
 
 ---
 
-**Squad 55 - CesiumFlow Project**
+## 📂 Estructura del Proyecto
+
+Arquitectura políglota desacoplada. No mezclen lógica de dominio con lógica de presentación.
+
+```text
+.
+├── frontend/              # SPA en Vue 3 + Vite
+│   ├── src/               # Componentes y Stores (Pinia)
+│   └── Dockerfile         # Construcción de imagen Node/Nginx
+├── core-service/          # Backend Java (Spring Boot + R2DBC)
+│   ├── src/               # Lógica de dominio y API REST
+│   └── pom.xml            # Dependencias Maven
+├── data-science/          # Engine Python (FastAPI + Scikit-learn)
+│   ├── models/            # Modelos serializados (.joblib)
+│   └── src/               # Pipeline de inferencia NLP
+├── db/                    # Infraestructura de datos
+│   └── init.sql           # Esquemas iniciales SQL
+├── docker-compose.yml     # Orquestador de topología de red
+└── Justfile               # Automatización operativa
+```
+
+## 🔧 Extensibilidad y Mantenimiento
+### Actualización del Modelo de IA
+El servicio de Python es independiente. Si el equipo de Data Science mejora el modelo:
+
+1.  Entrenar el modelo y generar los nuevos `.joblib`.
+
+2.  Reemplazar los archivos en `data-science/models/`.
+
+3.  Actualizar `requirements.txt` si cambiaron las versiones de `scikit-learn`.
+
+4.  Ejecutar `just dev` para reconstruir el contenedor de inferencia.
+
+### Agregar Nuevos Microservicios
+1.  Crear directorio del servicio (ej: `notification-service`).
+
+2.  Añadir su `Dockerfile`.
+
+3.  Registrarlo en `docker-compose.yml` dentro de la red `default`.
+
+### ⚠️ Troubleshooting (Solución de Problemas)
+**Error: "Port is already allocated" (5432 / 8080)** Si Docker falla al iniciar, tienes un proceso "zombie" o un servicio local (como un Postgres instalado en Windows) robando el puerto.
+
+**Solución (Git Bash / Terminal con Admin):**
+
+```bash
+# 1. Identificar el proceso invasor
+netstat -ano | findstr :5432
+
+# 2. Matar el proceso (Reemplaza 1234 con el PID que obtuviste)
+taskkill //F //PID 1234
+```
+## Squad 55 - CesiumFlow Project
