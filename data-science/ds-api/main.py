@@ -89,4 +89,9 @@ def health():
     return {"status": "UP" if ml_context["status"] == "ready" else "DOWN"}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    # En la nube, Railway inyecta la variable PORT.
+    # En local, esa variable no existe, así que usamos 5000 por defecto.
+    port = int(os.environ.get("PORT", 5000))
+
+    print(f"🚀 Iniciando servidor en el puerto: {port}")
+    uvicorn.run(app, host="0.0.0.0", port=port)

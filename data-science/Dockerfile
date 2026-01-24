@@ -34,7 +34,7 @@ COPY ds-api/ ./ds-api/
 
 RUN chown -R ml-service:ml-service /app /opt/venv
 
-# Healthcheck (FastAPI)
+# Healthcheck (FastAPI) - Local development usa 5000 fijo
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD curl --fail http://localhost:5000/health || exit 1
 
@@ -43,6 +43,7 @@ EXPOSE 5000
 
 # Entrypoint dinámico para acelerar el ciclo de desarrollo (hot-reload).
 CMD ["uvicorn", "ds-api.main:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]
+
 
 # --- ETAPA: PRODUCCIÓN (SLIM) ---
 # Runtime optimizado: Sin compiladores, imagen ligera.
@@ -60,18 +61,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Transferencia de artefacto: Exclusión de herramientas de compilación y cache.
-# Nota: Usamos --chown aquí para optimizar el tamaño de la capa final.
+# Transferencia de artefacto
 COPY --from=builder --chown=ml-service:ml-service /opt/venv /opt/venv
 COPY --from=builder --chown=ml-service:ml-service /app/models ./models
 COPY --from=builder --chown=ml-service:ml-service /app/src ./src
 COPY --from=builder --chown=ml-service:ml-service /app/ds-api ./ds-api
 
+# --- CAMBIO CRÍTICO 1: Healthcheck Dinámico ---
+# Ahora curl usa la variable ${PORT} o 5000 si no existe.
+# Sin esto, Railway matará tu app aunque funcione bien.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl --fail http://localhost:5000/health || exit 1
+  CMD curl --fail http://localhost:${PORT:-5000}/health || exit 1
 
 USER ml-service
 EXPOSE 5000
 
-# Entrypoint Prod (Optimizado)
-ENTRYPOINT ["uvicorn", "ds-api.main:app", "--host", "0.0.0.0", "--port", "5000"]
+# --- CAMBIO CRÍTICO 2: CMD con Shell ---
+# Cambiamos ENTRYPOINT por CMD y usamos 'sh -c'.
+# Esto permite que "${PORT:-5000}" se convierta en el número real que da Railway.
+CMD sh -c "uvicorn ds-api.main:app --host 0.0.0.0 --port ${PORT:-5000}"
