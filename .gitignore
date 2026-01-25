@@ -56,3 +56,5 @@ data-science/data/processed/*
 # Persistencia local de contenedores (Base de Datos).
 postgres-data/
 *.log
+# Backup de integracion
+data-science-backup/
