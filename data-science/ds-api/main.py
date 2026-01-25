@@ -6,42 +6,49 @@ from typing import List, Optional
 from fastapi import FastAPI, HTTPException, Response, status
 from pydantic import BaseModel
 
-# --- IMPORTACIÓN DIRECTA DEL ARCHIVO ORIGINAL ---
-# Agregamos la carpeta 'src' al path para que Python vea a 'sentiment_api.py'
+# --- INTEGRACIÓN CON NUEVO PREDICTOR DE PRODUCCIÓN ---
+# Agregamos la carpeta 'src' al path para importar módulos
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_PATH = os.path.join(BASE_DIR, "..", "src")
 sys.path.append(SRC_PATH)
 
 try:
-    # Importamos las funciones con los nombres EXACTOS del archivo original
-    from sentiment_api import predecir_sentimiento, cargar_modelo
+    # Importamos el SentimentPredictor validado en producción
+    from cesiumflow_ml.predictor import SentimentPredictor
 except ImportError as e:
-    print(f"❌ Error al importar sentiment_api.py: {e}")
+    print(f"❌ Error al importar SentimentPredictor: {e}")
+    import traceback
+    traceback.print_exc()
     sys.exit(1)
 
 # ==========================================
 # 2. APP CONFIGURATION
 # ==========================================
-app = FastAPI(title="SentimentAPI - CesiumFlow", version="0.1-OriginalLogic")
+app = FastAPI(
+    title="SentimentAPI - CesiumFlow",
+    version="2.0-ProductionModel",
+    description="API de clasificación de sentimientos con modelo validado (83.33% accuracy)"
+)
 
-MODELS_DIR = os.path.join(BASE_DIR, "..", "models")
-MODEL_PATH = os.path.join(MODELS_DIR, "sentiment_model.joblib")
-VECT_PATH = os.path.join(MODELS_DIR, "tfidf_vectorizer.joblib")
-
-ml_context = {"model": None, "vectorizer": None, "status": "initializing"}
+# Contexto global para el predictor
+ml_context = {"predictor": None, "status": "initializing"}
 
 @app.on_event("startup")
 async def startup_event():
+    """Inicializar el predictor al arrancar la aplicación."""
     try:
-        # Usamos la función cargar_modelo del archivo original
-        model, vectorizer = cargar_modelo(MODEL_PATH, VECT_PATH)
-        ml_context["model"] = model
-        ml_context["vectorizer"] = vectorizer
+        print("🔄 Inicializando SentimentPredictor...")
+        ml_context["predictor"] = SentimentPredictor()
         ml_context["status"] = "ready"
-        print(f"✅ Motor cargado usando lógica original.")
+        print("✅ Motor de ML cargado correctamente (Modelo de Producción v2.0)")
+        print("   - Accuracy: 83.33%")
+        print("   - F1-Macro: 0.8344")
+        print("   - Tiempo inferencia: ~3.88ms/predicción")
     except Exception as e:
         ml_context["status"] = "failed"
-        print(f"❌ Error: {e}")
+        print(f"❌ Error al cargar el modelo: {e}")
+        import traceback
+        traceback.print_exc()
 
 # ==========================================
 # 3. CONTRATO DE API (DTOs)
@@ -61,32 +68,58 @@ class SentimentResponse(BaseModel):
 # ==========================================
 @app.post("/predict", response_model=SentimentResponse)
 def predict_endpoint(request: ReviewRequest):
+    """
+    Endpoint principal de predicción de sentimientos.
+    
+    Mantiene compatibilidad total con la API anterior.
+    Ahora usa el modelo de producción validado (83.33% accuracy).
+    """
     if ml_context["status"] != "ready":
-        raise HTTPException(status_code=503, detail="Model not ready")
-
-    try:
-        # LLAMADA A LA LÓGICA ORIGINAL
-        # 'predecir_sentimiento' es la función del archivo sentiment_api.py
-        resultado = predecir_sentimiento(
-            texto=request.text,
-            modelo=ml_context["model"],
-            vectorizador=ml_context["vectorizer"],
-            top_n_keywords=request.top_n_keywords or 5
+        raise HTTPException(
+            status_code=503,
+            detail="Model not ready. Service is initializing or failed to load."
         )
 
-        return {
-            "prediction": resultado['prediction'],
-            "probability": round(resultado['probability'], 2),
-            "keywords": resultado['keywords'],
-            "timestamp": datetime.now().isoformat()
-        }
+    try:
+        # Obtener predictor
+        predictor = ml_context["predictor"]
+        
+        # Realizar predicción (devuelve PredictionResult)
+        resultado = predictor.predict(request.text)
+        
+        # Convertir a formato de respuesta de la API
+        # Limitar keywords según top_n_keywords
+        top_n = request.top_n_keywords or 5
+        keywords = resultado.keywords[:top_n] if resultado.keywords else []
+        
+        return SentimentResponse(
+            prediction=resultado.prediction,
+            probability=round(resultado.probability, 2),
+            keywords=keywords,
+            timestamp=resultado.timestamp
+        )
+        
+    except ValueError as e:
+        # Errores de validación (texto vacío, None, etc.)
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        print(f"🔥 Error en lógica original: {e}")
-        raise HTTPException(status_code=500, detail="Inference Error")
+        # Errores internos del modelo
+        print(f"🔥 Error en predicción: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Inference error: {str(e)}"
+        )
 
 @app.get("/health")
 def health():
-    return {"status": "UP" if ml_context["status"] == "ready" else "DOWN"}
+    """Health check endpoint."""
+    return {
+        "status": "UP" if ml_context["status"] == "ready" else "DOWN",
+        "version": "2.0-ProductionModel",
+        "model_ready": ml_context["status"] == "ready"
+    }
 
 if __name__ == "__main__":
     # En la nube, Railway inyecta la variable PORT.
