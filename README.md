@@ -107,11 +107,14 @@ docker ps  # Verificar que los 4 contenedores estén "Up" y "healthy"
 
 **Acceder a las interfaces:**
 
-| Servicio | URL | Propósito |
-|----------|-----|-----------|
-| 🖥️ **Aplicación Web** | http://localhost:5173 | Interfaz de usuario para análisis |
-| 📚 **Swagger API Docs** | http://localhost:8080/swagger-ui.html | Documentación interactiva de API |
-| ⚙️ **Health Check** | http://localhost:8080/actuator/health | Estado del sistema |
+- 🖥️ **Aplicación Web:** http://localhost:5173  
+  *Interfaz de usuario para análisis de sentimientos*
+
+- 📚 **Swagger API Docs:** http://localhost:8080/swagger-ui.html  
+  *Documentación interactiva de API*
+
+- ⚙️ **Health Check:** http://localhost:8080/actuator/health  
+  *Estado del sistema*
 
 **Probar predicción (vía terminal):**
 
@@ -140,12 +143,19 @@ curl -X POST "http://localhost:8080/api/v1/sentiment" \
 
 CesiumFlow implementa un **patrón de microservicios orquestados** con separación estricta de responsabilidades:
 
-| Componente | Tecnología | Versión | Puerto | Responsabilidad |
-|------------|-----------|---------|--------|-----------------|
-| **Frontend** | Vue 3 + Vite | 3.5.26 / 7.3.0 | `5173` | UI reactiva, dashboard de métricas, carga de datasets |
-| **Core Service** | Java 17 + Spring Boot 3.5 | WebFlux | `8080` | Orquestación, validación, persistencia, manejo de errores |
-| **ML Engine** | Python 3.14 + FastAPI | 0.127.x | `5000` | Inferencia NLP, preprocesamiento, extracción de keywords |
-| **Base de Datos** | PostgreSQL | 15-alpine | `5432` | Persistencia relacional, vistas materializadas para analítica |
+**Stack Tecnológico:**
+
+- **Frontend:** Vue 3 + Vite (v3.5.26 / 7.3.0) - Puerto `5173`
+  - UI reactiva, dashboard de métricas, carga de datasets
+
+- **Core Service:** Java 17 + Spring Boot 3.5 (WebFlux) - Puerto `8080`
+  - Orquestación, validación, persistencia, manejo de errores
+
+- **ML Engine:** Python 3.14 + FastAPI (v0.127.x) - Puerto `5000`
+  - Inferencia NLP, preprocesamiento, extracción de keywords
+
+- **Base de Datos:** PostgreSQL 15-alpine - Puerto `5432`
+  - Persistencia relacional, vistas materializadas para analítica
 
 **Dependencias Clave:**
 
@@ -244,14 +254,29 @@ sequenceDiagram
 
 ### Patrones de Diseño Aplicados
 
-| Patrón | Implementación | Beneficio |
-|--------|---------------|-----------|
-| **Gateway/API Gateway** | Core Service como punto único de entrada | Centraliza seguridad, validación y logging |
-| **Circuit Breaker** | Fallback en comunicación Core ↔ ML Engine | Alta disponibilidad ante fallos del motor IA |
-| **Reactive Streams** | Mono/Flux en Spring WebFlux + R2DBC | No bloqueante, alto throughput |
-| **Append-Only Log** | Base de datos como audit trail | Trazabilidad completa, análisis temporal |
-| **Health Check Pattern** | Endpoints `/health` + Docker healthchecks | Auto-recuperación de servicios |
-| **12-Factor App** | Variables de entorno para config | Portabilidad entre ambientes |
+- **Gateway/API Gateway**
+  - Implementación: Core Service como punto único de entrada
+  - Beneficio: Centraliza seguridad, validación y logging
+
+- **Circuit Breaker**
+  - Implementación: Fallback en comunicación Core ↔ ML Engine
+  - Beneficio: Alta disponibilidad ante fallos del motor IA
+
+- **Reactive Streams**
+  - Implementación: Mono/Flux en Spring WebFlux + R2DBC
+  - Beneficio: No bloqueante, alto throughput
+
+- **Append-Only Log**
+  - Implementación: Base de datos como audit trail
+  - Beneficio: Trazabilidad completa, análisis temporal
+
+- **Health Check Pattern**
+  - Implementación: Endpoints `/health` + Docker healthchecks
+  - Beneficio: Auto-recuperación de servicios
+
+- **12-Factor App**
+  - Implementación: Variables de entorno para config
+  - Beneficio: Portabilidad entre ambientes
 
 ---
 
@@ -271,12 +296,10 @@ sequenceDiagram
 
 **Métricas del Modelo (Evaluación en Test Set):**
 
-| Métrica | Valor | Interpretación |
-|---------|-------|----------------|
-| **Accuracy** | **83.33%** | 8 de cada 10 predicciones son correctas |
-| **F1-Macro** | **0.8344** | Equilibrio entre precisión y recall en las 3 clases |
-| **Tiempo de inferencia** | **3.88ms** | Promedio por predicción (~260 predicciones/segundo) |
-| **Reproducibilidad** | **100%** | Resultados consistentes en pruebas repetidas |
+- **Accuracy:** **83.33%** - 8 de cada 10 predicciones son correctas
+- **F1-Macro:** **0.8344** - Equilibrio entre precisión y recall en las 3 clases
+- **Tiempo de inferencia:** **3.88ms** - Promedio por predicción (~260 predicciones/segundo)
+- **Reproducibilidad:** **100%** - Resultados consistentes en pruebas repetidas
 
 **Algoritmo Seleccionado:**
 - **Modelo:** `LogisticRegression` (Scikit-learn 1.8.0)
@@ -313,11 +336,9 @@ def preprocess_text(text: str) -> str:
 
 **Artefactos del Modelo:**
 
-| Archivo | Tamaño | Descripción |
-|---------|--------|-------------|
-| `sentiment_model.joblib` | 235.39 KB | Modelo LogisticRegression entrenado |
-| `tfidf_vectorizer.joblib` | 378 KB | Vectorizador TF-IDF con vocabulario |
-| `stopwords_eliminar.txt` | 4.16 KB | 516 stopwords customizadas en español |
+- `sentiment_model.joblib` - 235.39 KB - Modelo LogisticRegression entrenado
+- `tfidf_vectorizer.joblib` - 378 KB - Vectorizador TF-IDF con vocabulario
+- `stopwords_eliminar.txt` - 4.16 KB - 516 stopwords customizadas en español
 
 ### Evaluación y Validación
 
@@ -587,11 +608,17 @@ text
 
 #### Software Requerido
 
-| Herramienta | Versión Mínima | Propósito | Link de Descarga |
-|-------------|----------------|-----------|------------------|
-| **Docker Desktop** | 29.1+ | Motor de contenedores | [Docker](https://www.docker.com/products/docker-desktop/) |
-| **Git** | 2.30+ | Control de versiones | [Git](https://git-scm.com/) |
-| **Just** (opcional) | 1.0+ | Task runner | [Just](https://github.com/casey/just#installation) |
+- **Docker Desktop** (v29.1+)
+  - Propósito: Motor de contenedores
+  - [Descargar Docker](https://www.docker.com/products/docker-desktop/)
+
+- **Git** (v2.30+)
+  - Propósito: Control de versiones
+  - [Descargar Git](https://git-scm.com/)
+
+- **Just** (v1.0+) - Opcional
+  - Propósito: Task runner para comandos simplificados
+  - [Instalar Just](https://github.com/casey/just#installation)
 
 **Nota para Windows:** Usar Git Bash o WSL2 (PowerShell/CMD pueden tener problemas con scripts de shell)
 
@@ -642,13 +669,25 @@ PYTHON_ENGINE_URL=http://sentiment-engine:5000
 
 ### Variables de Entorno Detalladas
 
-| Variable | Descripción | Valor por Defecto | Requerida |
-|----------|-------------|-------------------|-----------|
-| `DB_NAME` | Nombre de la base de datos PostgreSQL | `cesium_sentiment_db` | ✅ |
-| `DB_USER` | Usuario de PostgreSQL | `cesium_admin` | ✅ |
-| `DB_PASSWORD` | Contraseña de PostgreSQL | `your_secure_password_here` | ✅ |
-| `PYTHON_ENGINE_URL` | URL interna del ML Engine | `http://sentiment-engine:5000` | ✅ |
-| `PORT` (opcional) | Puerto del Core Service | `8080` | ❌ |
+- **`DB_NAME`** (Requerida) ✅
+  - Descripción: Nombre de la base de datos PostgreSQL
+  - Valor por defecto: `cesium_sentiment_db`
+
+- **`DB_USER`** (Requerida) ✅
+  - Descripción: Usuario de PostgreSQL
+  - Valor por defecto: `cesium_admin`
+
+- **`DB_PASSWORD`** (Requerida) ✅
+  - Descripción: Contraseña de PostgreSQL
+  - Valor por defecto: `your_secure_password_here`
+
+- **`PYTHON_ENGINE_URL`** (Requerida) ✅
+  - Descripción: URL interna del ML Engine
+  - Valor por defecto: `http://sentiment-engine:5000`
+
+- **`PORT`** (Opcional) ❌
+  - Descripción: Puerto del Core Service
+  - Valor por defecto: `8080`
 
 ---
 
@@ -844,13 +883,25 @@ sentiment-api/
 
 ### Carpetas Clave
 
-| Carpeta | Propósito | Audiencia |
-|---------|-----------|-----------|
-| `frontend/src/components/` | Componentes Vue reutilizables | Frontend Developers |
-| `core-service/src/main/java/` | Lógica de negocio Java | Backend Developers |
-| `data-science/src/cesiumflow_ml/` | Pipeline de ML | Data Scientists |
-| `docs/model-development/` | Decisiones técnicas del modelo | ML Engineers, Reviewers |
-| `notebooks/` | Exploración y experimentación | Data Scientists |
+- **`frontend/src/components/`**
+  - Propósito: Componentes Vue reutilizables
+  - Audiencia: Frontend Developers
+
+- **`core-service/src/main/java/`**
+  - Propósito: Lógica de negocio Java
+  - Audiencia: Backend Developers
+
+- **`data-science/src/cesiumflow_ml/`**
+  - Propósito: Pipeline de ML
+  - Audiencia: Data Scientists
+
+- **`docs/model-development/`**
+  - Propósito: Decisiones técnicas del modelo
+  - Audiencia: ML Engineers, Reviewers
+
+- **`notebooks/`**
+  - Propósito: Exploración y experimentación
+  - Audiencia: Data Scientists
 
 ---
 
@@ -865,14 +916,35 @@ sentiment-api/
 
 **Categorías:**
 
-| Categoría | Tests | Estado | Descripción |
-|-----------|-------|--------|-------------|
-| Carga de artefactos | 1 | ✅ | Validación de modelos .joblib |
-| Casos normales | 5 | ✅ | Predicciones positivas/negativas/neutras |
-| Casos edge | 10 | ✅ | Textos extremos, caracteres especiales |
-| Manejo de errores | 3 | ✅ | None, vacío, solo espacios |
-| Performance | 3 | ✅ | Latencia < 10ms |
-| Keywords | 3 | ✅ | Calidad de extracción |
+- **Carga de artefactos**
+  - Tests: 1
+  - Estado: ✅
+  - Descripción: Validación de modelos .joblib
+
+- **Casos normales**
+  - Tests: 5
+  - Estado: ✅
+  - Descripción: Predicciones positivas/negativas/neutras
+
+- **Casos edge**
+  - Tests: 10
+  - Estado: ✅
+  - Descripción: Textos extremos, caracteres especiales
+
+- **Manejo de errores**
+  - Tests: 3
+  - Estado: ✅
+  - Descripción: None, vacío, solo espacios
+
+- **Performance**
+  - Tests: 3
+  - Estado: ✅
+  - Descripción: Latencia < 10ms
+
+- **Keywords**
+  - Tests: 3
+  - Estado: ✅
+  - Descripción: Calidad de extracción
 
 **Ejecutar tests localmente:**
 ```bash
@@ -1016,14 +1088,29 @@ private String text;
 
 **Amenazas Mitigadas:**
 
-| Amenaza | Mitigación Implementada | Estado |
-|---------|------------------------|--------|
-| **SQL Injection** | R2DBC con consultas parametrizadas | ✅ |
-| **DoS por payload grande** | Límite 5000 chars + timeout 180s | ✅ |
-| **Exposición de Stack Traces** | Global Exception Handler | ✅ |
-| **Credenciales en código** | Variables de entorno | ✅ |
-| **CORS sin restricción** | ⚠️ Pendiente (implementar en Nginx) | ❌ |
-| **Ataques de fuerza bruta** | ⚠️ Pendiente (rate limiting) | ❌ |
+- **SQL Injection**
+  - Mitigación Implementada: R2DBC con consultas parametrizadas
+  - Estado: ✅
+
+- **DoS por payload grande**
+  - Mitigación Implementada: Límite 5000 chars + timeout 180s
+  - Estado: ✅
+
+- **Exposición de Stack Traces**
+  - Mitigación Implementada: Global Exception Handler
+  - Estado: ✅
+
+- **Credenciales en código**
+  - Mitigación Implementada: Variables de entorno
+  - Estado: ✅
+
+- **CORS sin restricción**
+  - Mitigación Implementada: ⚠️ Pendiente (implementar en Nginx)
+  - Estado: ❌
+
+- **Ataques de fuerza bruta**
+  - Mitigación Implementada: ⚠️ Pendiente (rate limiting)
+  - Estado: ❌
 
 ---
 
@@ -1033,11 +1120,17 @@ private String text;
 
 **Mediciones en entorno Docker (carga normal):**
 
-| Operación | Latencia | Throughput |
-|-----------|----------|------------|
-| **Predicción individual** | ~3.88ms (ML) + ~50ms (total E2E) | ~20 req/s |
-| **Batch de 100 registros** | ~4.5s | ~22 pred/s |
-| **Batch de 1000 registros** | ~45s | ~22 pred/s |
+- **Predicción individual:**
+  - Latencia: ~3.88ms (ML) + ~50ms (total E2E)
+  - Throughput: ~20 req/s
+
+- **Batch de 100 registros:**
+  - Latencia: ~4.5s
+  - Throughput: ~22 pred/s
+
+- **Batch de 1000 registros:**
+  - Latencia: ~45s
+  - Throughput: ~22 pred/s
 
 **Cuellos de botella identificados:**
 - Comunicación HTTP Core ↔ ML Engine (50-100ms de overhead)
@@ -1052,12 +1145,25 @@ private String text;
 
 **Consumo de recursos (Docker Desktop en desarrollo):**
 
-| Servicio | CPU (promedio) | Memoria | Imagen (tamaño) |
-|----------|----------------|---------|-----------------|
-| `cesium-core` | 5-15% | 512 MB | ~400 MB (JRE 17) |
-| `cesium-engine` | 2-8% | 256 MB | ~695 MB (Python 3.14) |
-| `cesium-db` | 1-3% | 128 MB | ~230 MB (Alpine) |
-| `cesium-frontend` | <1% | 50 MB | ~50 MB (Nginx) |
+- **`cesium-core`:**
+  - CPU: 5-15%
+  - Memoria: 512 MB
+  - Imagen: ~400 MB (JRE 17)
+
+- **`cesium-engine`:**
+  - CPU: 2-8%
+  - Memoria: 256 MB
+  - Imagen: ~695 MB (Python 3.14)
+
+- **`cesium-db`:**
+  - CPU: 1-3%
+  - Memoria: 128 MB
+  - Imagen: ~230 MB (Alpine)
+
+- **`cesium-frontend`:**
+  - CPU: <1%
+  - Memoria: 50 MB
+  - Imagen: ~50 MB (Nginx)
 
 **Total:** ~1.5 GB RAM, ~1.4 GB disco (imágenes)
 
@@ -1091,19 +1197,31 @@ private String text;
 
 #### 1. Dominio del Modelo
 
-| Limitación | Impacto | Workaround Actual |
-|------------|---------|-------------------|
-| Optimizado para **reseñas de e-commerce** | Degrada en otros contextos (soporte técnico, tweets) | Documentar alcance |
-| Solo **idioma español** | No funciona con inglés/otros idiomas | Agregar detector de idioma |
-| Dataset de **Amazon** | Puede no representar nichos específicos | Reentrenar con datos del cliente |
+- **Optimizado para reseñas de e-commerce:**
+  - Impacto: Degrada en otros contextos (soporte técnico, tweets)
+  - Workaround: Documentar alcance del modelo
+
+- **Solo idioma español:**
+  - Impacto: No funciona con inglés/otros idiomas
+  - Workaround: Agregar detector de idioma
+
+- **Dataset de Amazon:**
+  - Impacto: Puede no representar nichos específicos
+  - Workaround: Reentrenar con datos del cliente
 
 #### 2. Performance
 
-| Limitación | Impacto | Mitigación Planeada |
-|------------|---------|---------------------|
-| Latencia HTTP Core ↔ ML (50-100ms) | Ralentiza predicciones individuales | Implementar gRPC o comunicación in-process |
-| Sin caché de predicciones | Re-inferencia de textos repetidos | Redis caching (Roadmap) |
-| Procesamiento de CSV secuencial | Batch de 10k registros ~7-10 min | Procesamiento paralelo con Flux.parallel() |
+- **Latencia HTTP Core ↔ ML (50-100ms):**
+  - Impacto: Ralentiza predicciones individuales
+  - Mitigación: Implementar gRPC o comunicación in-process
+
+- **Sin caché de predicciones:**
+  - Impacto: Re-inferencia de textos repetidos
+  - Mitigación: Redis caching (Roadmap)
+
+- **Procesamiento de CSV secuencial:**
+  - Impacto: Batch de 10k registros ~7-10 min
+  - Mitigación: Procesamiento paralelo con Flux.parallel()
 
 #### 3. Seguridad y Compliance
 
@@ -1122,48 +1240,23 @@ private String text;
 - Sin alertas proactivas (PagerDuty/OpsGenie)
 - Trazabilidad distribuida limitada (sin OpenTelemetry)
 
-### Roadmap de Mejoras
-
-#### Fase 2: Producción Empresarial (Q2 2026)
-
-**Prioridad ALTA:**
-- [ ] Implementar autenticación (JWT + Spring Security)
-- [ ] Rate limiting (10 req/min por IP)
-- [ ] HTTPS con Let's Encrypt
-- [ ] Caché Redis (reducir latencia 70%)
-- [ ] Monitoreo con Prometheus + Grafana
-- [ ] CI/CD pipeline (GitHub Actions)
-
-**Prioridad MEDIA:**
-- [ ] Detector de idioma (langdetect)
-- [ ] Reentrenamiento incremental del modelo
-- [ ] Exportar análisis a PDF/Excel
-- [ ] API de administración (CRUD de registros)
-- [ ] Soporte para análisis de imágenes (OCR + NLP)
-
-**Prioridad BAJA:**
-- [ ] Modelo multiidioma (mBERT, XLM-R)
-- [ ] Análisis de aspectos (qué características se mencionan)
-- [ ] Detección de sarcasmo/ironía
-- [ ] Integración con CRMs (Salesforce, HubSpot)
-
-#### Fase 3: Inteligencia Avanzada (Q4 2026)
-
-- [ ] Detección de tendencias temporales (spikes de sentimiento negativo)
-- [ ] Análisis comparativo de competidores
-- [ ] Recomendaciones automatizadas (ej: "Mejorar embalaje")
-- [ ] Predicción de churn basada en sentimiento
-- [ ] Modelo de Deep Learning (BERT/RoBERTa) para >90% accuracy
-
 ### Riesgos Técnicos
 
-| Riesgo | Probabilidad | Impacto | Mitigación |
-|--------|--------------|---------|------------|
-| **Data drift** (modelo degrada con el tiempo) | MEDIA | ALTO | Monitoreo de métricas + reentrenamiento trimestral |
-| **Sesgo en predicciones** (clase Neutro subrepresentada) | ALTA | MEDIO | Técnicas de balanceo (SMOTE, class weights) |
-| **Crecimiento descontrolado de BD** | MEDIA | MEDIO | Particionamiento por fecha + archivado |
-| **Fallos de ML Engine** sin detección | BAJA | ALTO | Health checks cada 20s + alertas |
+- **Data drift (modelo degrada con el tiempo):**
+  - Probabilidad: MEDIA | Impacto: ALTO
+  - Mitigación: Monitoreo de métricas + reentrenamiento trimestral
 
+- **Sesgo en predicciones (clase Neutro subrepresentada):**
+  - Probabilidad: ALTA | Impacto: MEDIO
+  - Mitigación: Técnicas de balanceo (SMOTE, class weights)
+
+- **Crecimiento descontrolado de BD:**
+  - Probabilidad: MEDIA | Impacto: MEDIO
+  - Mitigación: Particionamiento por fecha + archivado
+
+- **Fallos de ML Engine sin detección:**
+  - Probabilidad: BAJA | Impacto: ALTO
+  - Mitigación: Health checks cada 20s + alertas
 
 ### ⚠️ Troubleshooting (Solución de Problemas)
 **Error: "Port is already allocated" (5432 / 8080)** Si Docker falla al iniciar, tienes un proceso "zombie" o un servicio local (como un Postgres instalado en Windows) robando el puerto.
@@ -1177,24 +1270,27 @@ netstat -ano | findstr :5432
 # 2. Matar el proceso (Reemplaza 1234 con el PID que obtuviste)
 taskkill //F //PID 1234
 ```
+
 ---
 
 ## 👥 Equipo - Squad 55
 
-**CesiumFlow** fue desarrollado por un equipo multidisciplinario de **Data Science** y **Backend Engineering** durante el hackathon **No Country** (Enero 2026).
+**CesiumFlow** fue desarrollado por un equipo multidisciplinario de **Data Science**, **Machine Learning** y **Backend Engineering** durante el hackathon **No Country** (Enero 2026).
 
-### Roles y Contribuciones
+### Equipo de Desarrollo
 
-| Miembro | Rol | Responsabilidades Principales |
-|---------|-----|------------------------------|
-| **[Pendiente: Nombre DS 1]** | Data Scientist Lead | Entrenamiento del modelo, EDA, validación de métricas |
-| **[Pendiente: Nombre DS 2]** | ML Engineer | Pipeline de preprocesamiento, integración FastAPI |
-| **[Pendiente: Nombre Backend 1]** | Backend Developer | Core Service (Spring Boot), arquitectura reactiva |
-| **[Pendiente: Nombre Backend 2]** | Backend Developer | Endpoints REST, validación, manejo de errores |
-| **[Pendiente: Nombre Frontend]** | Frontend Developer | Dashboard Vue 3, visualizaciones con Chart.js |
-| **[Pendiente: Nombre DevOps]** | DevOps/Infra | Docker, CI/CD, configuración de ambientes |
+**Backend:**
+- **Bryan Hernández Barrera** - Core Service (Spring Boot), arquitectura reactiva
+- **Oscar Florez Forero** - Endpoints REST, validación, manejo de errores  
+- **César Omar Ordóñez Hernández** - Infraestructura Docker, CI/CD
+- **Arnold Vásquez** - Backend Development & Data Science
 
-> **Nota para el equipo:** Por favor completar los nombres y contactos de cada miembro.
+**Data Science:**
+- **Raquel Araniva** - Entrenamiento del modelo, EDA, validación de métricas
+- **Arnold Vásquez** - Pipeline de preprocesamiento
+
+**Machine Learning:**
+- **Harrison Alberto Tutalcha Pame** - Integración FastAPI, optimización del modelo
 
 ### Filosofía de Desarrollo
 
@@ -1255,41 +1351,73 @@ Ver archivo completo: [LICENSE](LICENSE)
 
 ### Repositorio y Demo
 
-| Recurso | URL | Descripción |
-|---------|-----|-------------|
-| **Repositorio GitHub** | [github.com/cesiumflow/sentiment-api](https://github.com/cesiumflow/sentiment-api) | Código fuente completo |
-| **Demo Live** | ⚠️ Pendiente por desplegar | Instancia de producción (Railway/AWS) |
-| **Video de Demostración** | ⚠️ Pendiente por grabar | Walkthrough de 5 minutos |
-| **Presentación de Hackathon** | ⚠️ Pendiente por crear | Slides técnicos (Google Slides/PDF) |
+**Repositorio GitHub:**
+- 🔗 [github.com/cesiumflow/sentiment-api](https://github.com/cesiumflow/sentiment-api)
+- Código fuente completo con documentación
+
+**Demo Live:**
+- 🚀 [https://cesiumflow-sentiment.vercel.app/](https://cesiumflow-sentiment.vercel.app/)
+- Instancia de producción desplegada en Vercel
+- Acceso público para evaluación
 
 ### Documentación Técnica
 
-| Documento | Ubicación | Audiencia |
-|-----------|-----------|-----------|
-| **Especificación de API** | [docs/API_SPEC.md](docs/API_SPEC.md) | Desarrolladores, Integradores |
-| **RFC Arquitectura** | [docs/RFC-001-ARCHITECTURE-EVOLUTION.md](docs/RFC-001-ARCHITECTURE-EVOLUTION.md) | Arquitectos, Reviewers |
-| **Plan de Modelado** | [docs/model-development/PLAN_MODELADO.md](docs/model-development/PLAN_MODELADO.md) | Data Scientists |
-| **Informe de Validación** | [docs/model-development/INFORME_VALIDACION.md](docs/model-development/INFORME_VALIDACION.md) | ML Engineers, QA |
-| **Decisiones de Preprocesamiento** | [docs/model-development/DECISIONES_PREPROCESAMIENTO.md](docs/model-development/DECISIONES_PREPROCESAMIENTO.md) | Data Scientists |
+- **[Especificación de API](docs/API_SPEC.md)**
+  - Audiencia: Desarrolladores, Integradores
+  - Contratos REST, ejemplos de requests/responses
+
+- **[RFC Arquitectura](docs/RFC-001-ARCHITECTURE-EVOLUTION.md)**
+  - Audiencia: Arquitectos, Reviewers
+  - Decisiones técnicas y evolución del sistema
+
+- **[Plan de Modelado](docs/model-development/PLAN_MODELADO.md)**
+  - Audiencia: Data Scientists
+  - Proceso de entrenamiento y selección de modelo
+
+- **[Informe de Validación](docs/model-development/INFORME_VALIDACION.md)**
+  - Audiencia: ML Engineers, QA
+  - Resultados de tests end-to-end, métricas de calidad
+
+- **[Decisiones de Preprocesamiento](docs/model-development/DECISIONES_PREPROCESAMIENTO.md)**
+  - Audiencia: Data Scientists
+  - Pipeline de limpieza y transformación de datos
 
 ### Notebooks de Investigación
 
-| Notebook | Descripción | Ubicación |
-|----------|-------------|-----------|
-| **01_EDA_sentiment.ipynb** | Análisis exploratorio de datos | [notebooks/](notebooks/01_EDA_sentiment.ipynb) |
-| **02_modelo_sentiment.ipynb** | Entrenamiento y evaluación del modelo | [notebooks/](notebooks/02_modelo_sentiment.ipynb) |
-| **03_produccion_sentiment_plan.ipynb** | Preparación para producción | [notebooks/](notebooks/03_produccion_sentiment_plan.ipynb) |
+- **[01_EDA_sentiment.ipynb](notebooks/01_EDA_sentiment.ipynb)**
+  - Análisis exploratorio de datos
+
+- **[02_modelo_sentiment.ipynb](notebooks/02_modelo_sentiment.ipynb)**
+  - Entrenamiento y evaluación del modelo
+
+- **[03_produccion_sentiment_plan.ipynb](notebooks/03_produccion_sentiment_plan.ipynb)**
+  - Preparación para producción
 
 ### Recursos Externos
 
-| Recurso | Tipo | URL |
-|---------|------|-----|
-| **Amazon Reviews Multi** | Dataset | [huggingface.co/datasets/amazon_reviews_multi](https://huggingface.co/datasets/amazon_reviews_multi) |
-| **Spring WebFlux** | Documentación | [docs.spring.io/spring-framework/reference/web/webflux.html](https://docs.spring.io/spring-framework/reference/web/webflux.html) |
-| **FastAPI** | Documentación | [fastapi.tiangolo.com](https://fastapi.tiangolo.com/) |
-| **Scikit-learn** | Documentación | [scikit-learn.org](https://scikit-learn.org/) |
-| **Docker Compose** | Referencia | [docs.docker.com/compose/](https://docs.docker.com/compose/) |
-| **Just** | Repositorio | [github.com/casey/just](https://github.com/casey/just) |
+- **Amazon Reviews Multi**
+  - Tipo: Dataset
+  - URL: [huggingface.co/datasets/amazon_reviews_multi](https://huggingface.co/datasets/amazon_reviews_multi)
+
+- **Spring WebFlux**
+  - Tipo: Documentación
+  - URL: [docs.spring.io/spring-framework/reference/web/webflux.html](https://docs.spring.io/spring-framework/reference/web/webflux.html)
+
+- **FastAPI**
+  - Tipo: Documentación
+  - URL: [fastapi.tiangolo.com](https://fastapi.tiangolo.com/)
+
+- **Scikit-learn**
+  - Tipo: Documentación
+  - URL: [scikit-learn.org](https://scikit-learn.org/)
+
+- **Docker Compose**
+  - Tipo: Referencia
+  - URL: [docs.docker.com/compose/](https://docs.docker.com/compose/)
+
+- **Just**
+  - Tipo: Repositorio
+  - URL: [github.com/casey/just](https://github.com/casey/just)
 
 ### Contacto y Soporte
 
